@@ -1,7 +1,0 @@
-INDEX VERSION 1.131+C:\Users\quint\eclipse-workspace\lwjgl-game\.metadata\.plugins\org.eclipse.jdt.core
-218673393.index
-1410716460.index
-1865797976.index
-2786270403.index
-1043717240.index
-3287278790.index
