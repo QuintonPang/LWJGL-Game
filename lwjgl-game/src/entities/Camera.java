@@ -5,7 +5,7 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class Camera {
 	// initial position
-	private Vector3f position = new Vector3f(0,0,0);
+	private Vector3f position = new Vector3f(0,10,0);
 	private float pitch; // how high or low it is aimed
 	private float yaw; // how left or right the camera is aiming
 	private float roll; // how much it is rotated

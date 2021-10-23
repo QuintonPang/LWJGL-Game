@@ -1,5 +1,9 @@
 package engineTester;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.lwjgl.opengl.Display;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -10,9 +14,11 @@ import models.RawModel;
 import models.TexturedModel;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
+import renderEngine.MasterRenderer;
 import renderEngine.OBJLoader;
-import renderEngine.Renderer;
+import renderEngine.EntityRenderer;
 import shaders.StaticShader;
+import terrains.Terrain;
 import textures.ModelTexture;
 
 public class MainGameLoop {
@@ -23,9 +29,9 @@ public class MainGameLoop {
 		
 		Loader loader = new Loader();
 		
-		StaticShader shader = new StaticShader();
+		//StaticShader shader = new StaticShader();
 		
-		Renderer renderer = new Renderer(shader);
+		//Renderer renderer = new Renderer(shader);
 		
 		/*
 		// list of vertices of quad to be rendered
@@ -59,7 +65,7 @@ public class MainGameLoop {
 		
 		//RawModel model = loader.loadToVAO(vertices, textureCoords, indices);
 		//TexturedModel texturedModel = new TexturedModel(model,texture);
-		RawModel model = OBJLoader.loadObjModel("dragon", loader);
+		RawModel model = OBJLoader.loadObjModel("dragon",loader);
 		ModelTexture texture = new ModelTexture(loader.loadTexture("white"));
 		
 		// specular lighting
@@ -68,17 +74,35 @@ public class MainGameLoop {
 		
 		TexturedModel texturedModel = new TexturedModel(model,texture);
 		
-		Entity entity = new Entity(texturedModel,new Vector3f(0,0,-50),0,0,0,1);
-		Light light = new Light(new Vector3f(0,0,-20), new Vector3f(1,1,1));
+		List<Entity>dragons = new ArrayList<Entity>();
+		
+		for(int i=0;i<10;i++) {
+			Random random = new Random();
+			Entity entity = new Entity(texturedModel,new Vector3f(0,random.nextFloat()*100-50,random.nextFloat()*-300),0,0,0,1);		
+			dragons.add(entity);
+		}
+		Light light = new Light(new Vector3f(2000,2000,2000), new Vector3f(1,1,1));
+		
+		Terrain terrain = new Terrain(0,-1,loader,new ModelTexture(loader.loadTexture("grass")));
+		Terrain terrain2 = new Terrain(-1,-1,loader,new ModelTexture(loader.loadTexture("grass")));
 		
 		Camera camera = new Camera();
+		
+		MasterRenderer renderer = new MasterRenderer();
 		
 		while(!Display.isCloseRequested()) {
 			// game logic
 			// render
 			//entity.increasePosition(0, 0, -0.1f);
-			entity.increaseRotation(0, 1, 0);
+			//entity.increaseRotation(0, 1, 0);
 			camera.move(); // gets input of keyboard
+			
+			renderer.processTerrain(terrain);
+			renderer.processTerrain(terrain2);
+			for(Entity dragon:dragons) {
+				//renderer.processEntity(dragon);
+			}
+			/*
 			renderer.prepare();
 			shader.start();
 			shader.loadLight(light);
@@ -86,10 +110,13 @@ public class MainGameLoop {
 			//renderer.render(model);
 			renderer.render(entity,shader);
 			shader.stop();
+			*/
+			renderer.render(light, camera);
 			DisplayManager.updateDisplay();
 		}
 		
-		shader.cleanUp();
+		//shader.cleanUp();
+		renderer.cleanUp();
 		loader.cleanUp();
 		// after exiting, close display
 		DisplayManager.closeDisplay();
