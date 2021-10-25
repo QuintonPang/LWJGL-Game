@@ -20,6 +20,8 @@ import renderEngine.EntityRenderer;
 import shaders.StaticShader;
 import terrains.Terrain;
 import textures.ModelTexture;
+import textures.TerrainTexture;
+import textures.TerrainTexturePack;
 
 public class MainGameLoop {
 
@@ -62,11 +64,23 @@ public class MainGameLoop {
 		};
 		*/
 		
+		// ********** TERRAIN TEXTURE STUFF **********
+		
+		TerrainTexture backgroundTexture = new TerrainTexture(loader.loadTexture("grass"));
+		TerrainTexture rTexture = new TerrainTexture(loader.loadTexture("dirt"));
+		TerrainTexture gTexture = new TerrainTexture(loader.loadTexture("mud"));
+		TerrainTexture bTexture = new TerrainTexture(loader.loadTexture("path"));
+
+		TerrainTexturePack texturePack = new TerrainTexturePack(backgroundTexture,rTexture,gTexture,bTexture);
+		TerrainTexture blendMap = new TerrainTexture(loader.loadTexture("blendMap"));
+		
+		// *******************************************
+		
 		
 		//RawModel model = loader.loadToVAO(vertices, textureCoords, indices);
 		//TexturedModel texturedModel = new TexturedModel(model,texture);
-		RawModel model = OBJLoader.loadObjModel("dragon",loader);
-		ModelTexture texture = new ModelTexture(loader.loadTexture("white"));
+		RawModel model = OBJLoader.loadObjModel("monkey",loader);
+		ModelTexture texture = new ModelTexture(loader.loadTexture("monkeyTexture"));
 		
 		// specular lighting
 		texture.setShineDamper(10);
@@ -74,17 +88,54 @@ public class MainGameLoop {
 		
 		TexturedModel texturedModel = new TexturedModel(model,texture);
 		
-		List<Entity>dragons = new ArrayList<Entity>();
+		List<Entity>monkeys = new ArrayList<Entity>();
 		
 		for(int i=0;i<10;i++) {
 			Random random = new Random();
-			Entity entity = new Entity(texturedModel,new Vector3f(0,random.nextFloat()*100-50,random.nextFloat()*-300),0,0,0,1);		
-			dragons.add(entity);
+			Entity entity = new Entity(texturedModel,new Vector3f(random.nextFloat()*500-250,5,random.nextFloat()*-300),0,0,0,2);		
+			monkeys.add(entity);
 		}
+		
+		List<Entity>ferns = new ArrayList<Entity>();
+		
+		ModelTexture fernTexture = new ModelTexture(loader.loadTexture("fern"));
+		fernTexture.setHasTransparency(true);
+		fernTexture.setUseFakeLighting(true);
+		
+		for(int i=0;i<1500;i++) {
+			Random random = new Random();
+			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("fern", loader),fernTexture),new Vector3f(random.nextFloat()*1000-500,0,random.nextFloat()*-300),0,0,0,1);		
+			ferns.add(entity);
+		}
+		
+		List<Entity>trees = new ArrayList<Entity>();
+		
+		ModelTexture treeTexture = new ModelTexture(loader.loadTexture("tree"));
+		treeTexture.setHasTransparency(true);
+		treeTexture.setUseFakeLighting(true);
+		
+		for(int i=0;i<100;i++) {
+			Random random = new Random();
+			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("tree", loader),treeTexture),new Vector3f(random.nextFloat()*1000-500,0,random.nextFloat()*-300),0,0,0,8);		
+			trees.add(entity);
+		}
+		
+		List<Entity>lowPolyTrees = new ArrayList<Entity>();
+
+		ModelTexture lowPolyTreeTexture = new ModelTexture(loader.loadTexture("lowPolyTree"));
+		lowPolyTreeTexture.setHasTransparency(true);
+		lowPolyTreeTexture.setUseFakeLighting(true);
+		
+		for(int i=0;i<75;i++) {
+			Random random = new Random();
+			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("lowPolyTree", loader),lowPolyTreeTexture),new Vector3f(random.nextFloat()*1000-500,0,random.nextFloat()*-300),0,0,0,1);		
+			lowPolyTrees.add(entity);
+		}
+		
 		Light light = new Light(new Vector3f(2000,2000,2000), new Vector3f(1,1,1));
 		
-		Terrain terrain = new Terrain(0,-1,loader,new ModelTexture(loader.loadTexture("grass")));
-		Terrain terrain2 = new Terrain(-1,-1,loader,new ModelTexture(loader.loadTexture("grass")));
+		Terrain terrain = new Terrain(0,-1,loader,texturePack,blendMap);
+		Terrain terrain2 = new Terrain(-1,-1,loader,texturePack,blendMap);
 		
 		Camera camera = new Camera();
 		
@@ -99,8 +150,18 @@ public class MainGameLoop {
 			
 			renderer.processTerrain(terrain);
 			renderer.processTerrain(terrain2);
-			for(Entity dragon:dragons) {
-				//renderer.processEntity(dragon);
+			for(Entity monkey:monkeys) {
+				monkey.increaseRotation(0, 1, 0);
+				renderer.processEntity(monkey);
+			}
+			for(Entity fern:ferns) {
+				renderer.processEntity(fern);
+			}
+			for(Entity tree:trees) {
+				renderer.processEntity(tree);
+			}
+			for(Entity lowPolyTree:lowPolyTrees) {
+				renderer.processEntity(lowPolyTree);
 			}
 			/*
 			renderer.prepare();

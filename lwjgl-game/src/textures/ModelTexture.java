@@ -6,6 +6,25 @@ public class ModelTexture {
 	private float shineDamper = 1; // intensity of light reflection based on distance between reflection line and camera
 	private float reflectivity = 0;
 	
+	private boolean hasTransparency = false;
+	private boolean useFakeLighting = false;
+	
+	public boolean isUseFakeLighting() {
+		return useFakeLighting;
+	}
+
+	public void setUseFakeLighting(boolean useFakeLighting) {
+		this.useFakeLighting = useFakeLighting;
+	}
+
+	public boolean isHasTransparency() {
+		return hasTransparency;
+	}
+
+	public void setHasTransparency(boolean hasTransparency) {
+		this.hasTransparency = hasTransparency;
+	}
+
 	public int getTextureID() {
 		return textureID;
 	}

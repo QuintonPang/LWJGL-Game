@@ -3,6 +3,8 @@ package terrains;
 import models.RawModel;
 import renderEngine.Loader;
 import textures.ModelTexture;
+import textures.TerrainTexture;
+import textures.TerrainTexturePack;
 
 public class Terrain {
 	private static final float SIZE = 800;
@@ -11,10 +13,21 @@ public class Terrain {
 	private float x;
 	private float z;
 	private RawModel model;
-	private ModelTexture texture;
+	//private ModelTexture texture;
+	private TerrainTexturePack texturePack; // mulittexturing
+	private TerrainTexture blendMap;
 	
+	@Deprecated
 	public Terrain(int gridX, int gridZ, Loader loader, ModelTexture texture) {
-		this.texture = texture;
+		//this.texture = texture;
+		this.x = gridX * SIZE;
+		this.z = gridZ * SIZE;
+		this.model = generateTerrain(loader);
+	}
+	
+	public Terrain(int gridX, int gridZ, Loader loader, TerrainTexturePack texturePack, TerrainTexture blendMap) {
+		this.texturePack = texturePack;
+		this.blendMap = blendMap;
 		this.x = gridX * SIZE;
 		this.z = gridZ * SIZE;
 		this.model = generateTerrain(loader);
@@ -31,10 +44,11 @@ public class Terrain {
 	public RawModel getModel() {
 		return model;
 	}
-
+	/*
 	public ModelTexture getTexture() {
 		return texture;
 	}
+	*/
 
 	private RawModel generateTerrain(Loader loader){
 		int count = VERTEX_COUNT * VERTEX_COUNT;
@@ -73,4 +87,14 @@ public class Terrain {
 		}
 		return loader.loadToVAO(vertices, textureCoords, normals, indices);
 	}
+
+	public TerrainTexturePack getTexturePack() {
+		return texturePack;
+	}
+
+
+	public TerrainTexture getBlendMap() {
+		return blendMap;
+	}
+
 }

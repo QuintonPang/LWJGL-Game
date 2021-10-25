@@ -24,6 +24,8 @@ public class MasterRenderer {
 	private static final float NEAR_PLANE = 0.1f;
 	private static final float FAR_PLANE = 1000;
 	
+	private static final float RED = 0.5f, GREEN = 0.5f, BLUE = 0.5f;
+	
 	private Matrix4f projectionMatrix;
 	
 	private StaticShader shader = new StaticShader();
@@ -39,22 +41,32 @@ public class MasterRenderer {
 	
 	public MasterRenderer() {
 		// prevent side facing away from camera from being rendered
-		GL11.glEnable(GL11.GL_CULL_FACE);
-		GL11.glCullFace(GL11.GL_BACK);
+		disableCulling();
 		createProjectionMatrix();
 		renderer = new EntityRenderer(shader, projectionMatrix);
 		terrainRenderer = new TerrainRenderer(terrainShader,projectionMatrix);
 	}
 	
+	public static void enableCulling() {
+		GL11.glEnable(GL11.GL_CULL_FACE);
+		GL11.glCullFace(GL11.GL_BACK);
+	}
+	
+	public static void disableCulling() {
+		GL11.glDisable(GL11.GL_CULL_FACE);
+	}
+	
 	public void render(Light sun, Camera camera) {
 		prepare();
 		shader.start();
+		shader.loadSkyColor(RED, GREEN, BLUE);
 		shader.loadLight(sun);
 		shader.loadViewMatrix(camera);
 		renderer.render(entities);
 		shader.stop();
 		
 		terrainShader.start();
+		terrainShader.loadSkyColor(RED, GREEN, BLUE);
 		terrainShader.loadLight(sun);
 		terrainShader.loadViewMatrix(camera);
 		terrainRenderer.render(terrains);
@@ -72,7 +84,7 @@ public class MasterRenderer {
 	public void prepare() {
 		GL11.glEnable(GL11.GL_DEPTH_TEST); // tests which triangle is in front
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT|GL11.GL_DEPTH_BUFFER_BIT); // clear color from frame
-		GL11.glClearColor(1, 0, 0, 1); // replace it with the color argument
+		GL11.glClearColor(RED,GREEN,BLUE, 1); // replace it with the color argument
 	}
 	
 	
