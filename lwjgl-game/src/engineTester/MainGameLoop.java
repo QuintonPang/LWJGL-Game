@@ -10,6 +10,7 @@ import org.lwjgl.util.vector.Vector3f;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
+import entities.Player;
 import models.RawModel;
 import models.TexturedModel;
 import renderEngine.DisplayManager;
@@ -141,15 +142,21 @@ public class MainGameLoop {
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
+		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
+		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(100,5,-50),0,0,0,2);
+		
 		while(!Display.isCloseRequested()) {
 			// game logic
 			// render
 			//entity.increasePosition(0, 0, -0.1f);
 			//entity.increaseRotation(0, 1, 0);
-			camera.move(); // gets input of keyboard
+			camera.move();
+			player.move();  // gets input of keyboard
 			
 			renderer.processTerrain(terrain);
 			renderer.processTerrain(terrain2);
+			
+			renderer.processEntity(player);
 			for(Entity monkey:monkeys) {
 				monkey.increaseRotation(0, 1, 0);
 				renderer.processEntity(monkey);
