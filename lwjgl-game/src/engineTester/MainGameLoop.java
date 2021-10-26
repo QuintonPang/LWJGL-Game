@@ -138,12 +138,13 @@ public class MainGameLoop {
 		Terrain terrain = new Terrain(0,-1,loader,texturePack,blendMap);
 		Terrain terrain2 = new Terrain(-1,-1,loader,texturePack,blendMap);
 		
-		Camera camera = new Camera();
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
 		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
-		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(100,5,-50),0,0,0,2);
+		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(100,5,-50),0,0,0,1);
+		
+		Camera camera = new Camera(player);
 		
 		while(!Display.isCloseRequested()) {
 			// game logic
