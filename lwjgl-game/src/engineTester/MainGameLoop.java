@@ -78,6 +78,19 @@ public class MainGameLoop {
 		// *******************************************
 		
 		
+		Terrain terrain = new Terrain(-1,-1,loader,texturePack,blendMap,"heightMap");
+		Terrain terrain2 = new Terrain(-1,0,loader,texturePack,blendMap,"heightMap");
+		Terrain terrain3 = new Terrain(0,-1,loader,texturePack,blendMap,"heightMap");
+		Terrain terrain4 = new Terrain(0,0,loader,texturePack,blendMap,"heightMap");
+		
+		Terrain[][] terrains = new Terrain[2][2];
+		terrains[0][0] = terrain;
+		terrains[0][1] = terrain2;
+		terrains[1][0] = terrain3;
+		terrains[1][1] = terrain4;
+		
+		//********** RENDERING ENTITIES **********
+		
 		//RawModel model = loader.loadToVAO(vertices, textureCoords, indices);
 		//TexturedModel texturedModel = new TexturedModel(model,texture);
 		RawModel model = OBJLoader.loadObjModel("monkey",loader);
@@ -86,26 +99,37 @@ public class MainGameLoop {
 		// specular lighting
 		texture.setShineDamper(10);
 		texture.setReflectivity(1);	
-		
 		TexturedModel texturedModel = new TexturedModel(model,texture);
 		
 		List<Entity>monkeys = new ArrayList<Entity>();
 		
+		Random random = new Random();
+		
 		for(int i=0;i<10;i++) {
-			Random random = new Random();
-			Entity entity = new Entity(texturedModel,new Vector3f(random.nextFloat()*500-250,5,random.nextFloat()*-300),0,0,0,2);		
+			float x = random.nextFloat()*500-250;
+			float z = random.nextFloat()*-300;
+			int gridX = (int) (Math.floor(x/Terrain.getSize())) + 1;
+			int gridZ = (int) (Math.floor(z/Terrain.getSize())) + 1;
+			float y = terrains[gridX][gridZ].getHeightOfTerrain(x, z);
+			Entity entity = new Entity(texturedModel,new Vector3f(x,y+5,z),0,0,0,2);	
 			monkeys.add(entity);
 		}
 		
 		List<Entity>ferns = new ArrayList<Entity>();
 		
-		ModelTexture fernTexture = new ModelTexture(loader.loadTexture("fern"));
+		//ModelTexture fernTexture = new ModelTexture(loader.loadTexture("fern"));
+		ModelTexture fernTexture = new ModelTexture(loader.loadTexture("flowers"));
 		fernTexture.setHasTransparency(true);
 		fernTexture.setUseFakeLighting(true);
+		fernTexture.setNumberOfRows(2);
 		
 		for(int i=0;i<1500;i++) {
-			Random random = new Random();
-			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("fern", loader),fernTexture),new Vector3f(random.nextFloat()*1000-500,0,random.nextFloat()*-300),0,0,0,1);		
+			float x = random.nextFloat()*1000-500;
+			float z = random.nextFloat()*-300;
+			int gridX = (int) (Math.floor(x/Terrain.getSize())) + 1;
+			int gridZ = (int) (Math.floor(z/Terrain.getSize())) + 1;
+			float y = terrains[gridX][gridZ].getHeightOfTerrain(x, z);
+			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("fern", loader),fernTexture),random.nextInt(4),new Vector3f(x,y,z),0,0,0,1);		
 			ferns.add(entity);
 		}
 		
@@ -116,8 +140,12 @@ public class MainGameLoop {
 		treeTexture.setUseFakeLighting(true);
 		
 		for(int i=0;i<100;i++) {
-			Random random = new Random();
-			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("tree", loader),treeTexture),new Vector3f(random.nextFloat()*1000-500,0,random.nextFloat()*-300),0,0,0,8);		
+			float x = random.nextFloat()*1000-500;
+			float z = random.nextFloat()*-300;
+			int gridX = (int) (Math.floor(x/Terrain.getSize())) + 1;
+			int gridZ = (int) (Math.floor(z/Terrain.getSize())) + 1;
+			float y = terrains[gridX][gridZ].getHeightOfTerrain(x, z);
+			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("tree", loader),treeTexture),new Vector3f(x,y,z),0,0,0,8);		
 			trees.add(entity);
 		}
 		
@@ -128,16 +156,18 @@ public class MainGameLoop {
 		lowPolyTreeTexture.setUseFakeLighting(true);
 		
 		for(int i=0;i<75;i++) {
-			Random random = new Random();
-			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("lowPolyTree", loader),lowPolyTreeTexture),new Vector3f(random.nextFloat()*1000-500,0,random.nextFloat()*-300),0,0,0,1);		
+			float x = random.nextFloat()*1000-500;
+			float z = random.nextFloat()*-300;
+			int gridX = (int) (Math.floor(x/Terrain.getSize())) + 1;
+			int gridZ = (int) (Math.floor(z/Terrain.getSize())) + 1;
+			float y = terrains[gridX][gridZ].getHeightOfTerrain(x, z);
+			Entity entity = new Entity(new TexturedModel(OBJLoader.loadObjModel("lowPolyTree", loader),lowPolyTreeTexture),new Vector3f(x,y,z),0,0,0,1);		
 			lowPolyTrees.add(entity);
 		}
 		
+		//********************
+		
 		Light light = new Light(new Vector3f(2000,2000,2000), new Vector3f(1,1,1));
-		
-		Terrain terrain = new Terrain(0,-1,loader,texturePack,blendMap);
-		Terrain terrain2 = new Terrain(-1,-1,loader,texturePack,blendMap);
-		
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
@@ -147,16 +177,23 @@ public class MainGameLoop {
 		Camera camera = new Camera(player);
 		
 		while(!Display.isCloseRequested()) {
+			
 			// game logic
 			// render
 			//entity.increasePosition(0, 0, -0.1f);
 			//entity.increaseRotation(0, 1, 0);
+			
+			int gridX = (int) (Math.floor(player.getPosition().x/Terrain.getSize())) + 1;
+			int gridZ = (int) (Math.floor(player.getPosition().z/Terrain.getSize())) + 1;
+		
 			camera.move();
-			player.move();  // gets input of keyboard
+			player.move(terrains[gridX][gridZ]);  // gets input of keyboard
 			
 			renderer.processTerrain(terrain);
 			renderer.processTerrain(terrain2);
-			
+			renderer.processTerrain(terrain3);
+			renderer.processTerrain(terrain4);
+
 			renderer.processEntity(player);
 			for(Entity monkey:monkeys) {
 				monkey.increaseRotation(0, 1, 0);

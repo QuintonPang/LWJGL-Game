@@ -17,7 +17,7 @@ uniform mat4 viewMatrix; // moving the camera
 uniform vec3 lightPosition;
 
 // for fog effect
-const float density = 0.006;
+const float density = 0.003;
 const float gradient = 5.0;
 
 
