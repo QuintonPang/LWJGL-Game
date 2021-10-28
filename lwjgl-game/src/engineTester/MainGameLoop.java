@@ -168,9 +168,16 @@ public class MainGameLoop {
 			lowPolyTrees.add(entity);
 		}
 		
-		//********************
+		// ********************
 		
-		Light light = new Light(new Vector3f(2000,2000,2000), new Vector3f(1,1,1));
+		// ********** LIGHTS **********
+		List<Light> lights = new ArrayList<Light>();
+		Light light = new Light(new Vector3f(0,1000,-7000), new Vector3f(0.4f,0.4f,0.4f));
+		lights.add(light);
+		lights.add(new Light(new Vector3f(185,10,-293), new Vector3f(2,0,0), new Vector3f(1,0.1f,0.002f)));
+		lights.add(new Light(new Vector3f(270,17,-300), new Vector3f(0,2,2), new Vector3f(1,0.01f,0.002f)));
+		lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
+		// ********************
 		
 		MasterRenderer renderer = new MasterRenderer();
 		
@@ -226,7 +233,7 @@ public class MainGameLoop {
 			renderer.render(entity,shader);
 			shader.stop();
 			*/
-			renderer.render(light, camera);
+			renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}
