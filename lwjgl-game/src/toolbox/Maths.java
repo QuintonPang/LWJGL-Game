@@ -33,6 +33,18 @@ public class Maths {
 		return matrix;
 	}
 	
+	// creating transformation matrix
+		public static Matrix4f createTransformationMatrix(Vector2f translation, Vector2f scale) {
+			Matrix4f matrix = new Matrix4f();
+			matrix.setIdentity(); // set it to identity matrix
+			// translation
+			Matrix4f.translate(translation, matrix, matrix);
+			// scale
+			Matrix4f.scale(new Vector3f(scale.x,scale.y,1f), matrix, matrix);
+			return matrix;
+		}
+
+	
 	public static Matrix4f createViewMatrix(Camera camera) {
 		// not using roll
 		Matrix4f viewMatrix = new Matrix4f();

@@ -50,7 +50,6 @@ public class StaticShader extends ShaderProgram {
 		location_skyColor= super.getUniformLocation("skyColor");
 		location_numberOfRows= super.getUniformLocation("numberOfRows");
 		location_offset= super.getUniformLocation("offset");
-
 	}
 	
 	public void loadNumberOfRows(int numberOfRows) {

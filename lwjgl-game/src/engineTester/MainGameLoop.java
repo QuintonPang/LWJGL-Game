@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
 
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
 import entities.Player;
+import guis.GuiRenderer;
+import guis.GuiTexture;
 import models.RawModel;
 import models.TexturedModel;
 import renderEngine.DisplayManager;
@@ -176,6 +179,12 @@ public class MainGameLoop {
 		
 		Camera camera = new Camera(player);
 		
+		List<GuiTexture> guis = new ArrayList<GuiTexture>();
+		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"),new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
+		guis.add(gui);
+		
+		GuiRenderer guiRenderer = new GuiRenderer(loader);
+		
 		while(!Display.isCloseRequested()) {
 			
 			// game logic
@@ -218,10 +227,12 @@ public class MainGameLoop {
 			shader.stop();
 			*/
 			renderer.render(light, camera);
+			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}
 		
 		//shader.cleanUp();
+		guiRenderer.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
 		// after exiting, close display
