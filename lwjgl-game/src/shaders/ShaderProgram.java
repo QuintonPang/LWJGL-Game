@@ -29,7 +29,7 @@ public abstract class ShaderProgram {
 		bindAttributes();
 		GL20.glLinkProgram(programID);
 		GL20.glValidateProgram(programID);
-		getAllUniformLocation();
+		getAllUniformLocations();
 	}
 	
 	public void load2DVector(int location, Vector2f vector) {
@@ -63,7 +63,7 @@ public abstract class ShaderProgram {
 		GL20.glUniformMatrix4(location, false, matrixBuffer);
 	}
 	
-	protected abstract void getAllUniformLocation();
+	protected abstract void getAllUniformLocations();
 	
 	// uniform variables
 	protected int getUniformLocation(String uniformName) {

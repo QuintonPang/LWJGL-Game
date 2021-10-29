@@ -179,7 +179,7 @@ public class MainGameLoop {
 		lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
 		// ********************
 		
-		MasterRenderer renderer = new MasterRenderer();
+		MasterRenderer renderer = new MasterRenderer(loader);
 		
 		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
 		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(100,5,-50),0,0,0,1);
