@@ -26,6 +26,7 @@ import terrains.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
+import toolbox.MousePicker;
 
 public class MainGameLoop {
 
@@ -176,7 +177,7 @@ public class MainGameLoop {
 		lights.add(light);
 		lights.add(new Light(new Vector3f(185,10,-293), new Vector3f(2,0,0), new Vector3f(1,0.1f,0.002f)));
 		lights.add(new Light(new Vector3f(270,17,-300), new Vector3f(0,2,2), new Vector3f(1,0.01f,0.002f)));
-		lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
+		//lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
 		// ********************
 		
 		MasterRenderer renderer = new MasterRenderer(loader);
@@ -192,6 +193,8 @@ public class MainGameLoop {
 		
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
 		
+		MousePicker picker = new MousePicker(camera, renderer.getProjectionMatrix(),terrains);
+		
 		while(!Display.isCloseRequested()) {
 			
 			// game logic
@@ -201,9 +204,18 @@ public class MainGameLoop {
 			
 			int gridX = (int) (Math.floor(player.getPosition().x/Terrain.getSize())) + 1;
 			int gridZ = (int) (Math.floor(player.getPosition().z/Terrain.getSize())) + 1;
-		
+			
 			camera.move();
 			player.move(terrains[gridX][gridZ]);  // gets input of keyboard
+			
+			picker.update();
+			
+			if(picker.getCurrentTerrainPoint()!=null) { // if cursor is not pointing away from terrain
+				//Entity monkeyFollowsCursor = new Entity(texturedModel,picker.getCurrentTerrainPoint(),0,0,0,2);	
+				//renderer.processEntity(monkeyFollowsCursor);
+				lights.remove(lights.size()-1);
+				lights.add(new Light(new Vector3f(picker.getCurrentTerrainPoint().x,picker.getCurrentTerrainPoint().y+0.5f,picker.getCurrentTerrainPoint().z), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
+			}
 			
 			renderer.processTerrain(terrain);
 			renderer.processTerrain(terrain2);
@@ -211,6 +223,9 @@ public class MainGameLoop {
 			renderer.processTerrain(terrain4);
 
 			renderer.processEntity(player);
+			
+			
+			
 			for(Entity monkey:monkeys) {
 				monkey.increaseRotation(0, 1, 0);
 				renderer.processEntity(monkey);
@@ -236,6 +251,7 @@ public class MainGameLoop {
 			renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
+			System.out.println(player.getPosition());
 		}
 		
 		//shader.cleanUp();

@@ -34,7 +34,9 @@ public class Player extends Entity {
 		float distance = currentSpeed * DisplayManager.getFrameTimeSeconds();
 		float dx = (float) (distance*Math.sin(Math.toRadians(super.getRotY()))); // horizontal movement distance
 		float dz = (float) (distance*Math.cos(Math.toRadians(super.getRotY()))); // frontal movement distance
-		super.increasePosition(dx, 0, dz);
+		if((position.x+dx)<=Terrain.getSize()&&(position.z+dz) <=Terrain.getSize()-10&&(position.x+dx)>=-Terrain.getSize()&&(position.z+dz)>=-Terrain.getSize()) { // prevent player from running out from then world
+			super.increasePosition(dx, 0, dz);
+		}
 		upwardsSpeed += GRAVITY * DisplayManager.getFrameTimeSeconds();
 		super.increasePosition(0,upwardsSpeed*DisplayManager.getFrameTimeSeconds(), 0);
 		float terrainHeight = terrain.getHeightOfTerrain(super.getPosition().x, super.getPosition().z);

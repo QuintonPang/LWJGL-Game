@@ -7,7 +7,7 @@ import models.TexturedModel;
 public class Entity {
 	
 	private TexturedModel model;
-	private Vector3f position;
+	protected Vector3f position;
 	private float rotX, rotY, rotZ;
 	private float scale;
 	
