@@ -124,7 +124,7 @@ public class MainGameLoop {
 		//ModelTexture fernTexture = new ModelTexture(loader.loadTexture("fern"));
 		ModelTexture fernTexture = new ModelTexture(loader.loadTexture("flowers"));
 		fernTexture.setHasTransparency(true);
-		fernTexture.setUseFakeLighting(true);
+		fernTexture.setUseFakeLighting(true); // no dark side
 		fernTexture.setNumberOfRows(2);
 		
 		for(int i=0;i<1500;i++) {
@@ -173,18 +173,19 @@ public class MainGameLoop {
 		
 		// ********** LIGHTS **********
 		List<Light> lights = new ArrayList<Light>();
-		Light light = new Light(new Vector3f(0,1000,-7000), new Vector3f(0.4f,0.4f,0.4f));
+		Light light = new Light(new Vector3f(0,10000,-7000), new Vector3f(0.4f,0.4f,0.4f),new Vector3f(0.25f,0,0)); // smaller the value of attenuation, the greater the range of illumination
 		lights.add(light);
-		lights.add(new Light(new Vector3f(185,10,-293), new Vector3f(2,0,0), new Vector3f(1,0.1f,0.002f)));
-		lights.add(new Light(new Vector3f(270,17,-300), new Vector3f(0,2,2), new Vector3f(1,0.01f,0.002f)));
+		//lights.add(new Light(new Vector3f(-185,10,-293), new Vector3f(10,0,0),new Vector3f(1,0.01f,0.002f)));
+		//lights.add(new Light(new Vector3f(270,17,-300), new Vector3f(0,2,2), new Vector3f(1,0.01f,0.002f)));
 		//lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
 		// ********************
 		
 		MasterRenderer renderer = new MasterRenderer(loader);
 		
 		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
-		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(100,5,-50),0,0,0,1);
-		
+		playerTexture.setUseFakeLighting(true);
+		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(0,100,0),0,0,0,1);
+	
 		Camera camera = new Camera(player);
 		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
@@ -213,9 +214,10 @@ public class MainGameLoop {
 			if(picker.getCurrentTerrainPoint()!=null) { // if cursor is not pointing away from terrain
 				//Entity monkeyFollowsCursor = new Entity(texturedModel,picker.getCurrentTerrainPoint(),0,0,0,2);	
 				//renderer.processEntity(monkeyFollowsCursor);
-				lights.remove(lights.size()-1);
-				lights.add(new Light(new Vector3f(picker.getCurrentTerrainPoint().x,picker.getCurrentTerrainPoint().y+0.5f,picker.getCurrentTerrainPoint().z), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
-			}
+				if(lights.size()==2) lights.remove(1); // update player's light
+				Terrain terrainIlluminated = terrains[gridX][gridZ];
+				lights.add(new Light(new Vector3f(picker.getCurrentTerrainPoint().x,terrainIlluminated.getHeightOfTerrain(picker.getCurrentTerrainPoint().x,picker.getCurrentTerrainPoint().z)+3,picker.getCurrentTerrainPoint().z), new Vector3f(2,0,0), new Vector3f(1,0.01f,0.002f)));
+			} 
 			
 			renderer.processTerrain(terrain);
 			renderer.processTerrain(terrain2);
@@ -251,7 +253,6 @@ public class MainGameLoop {
 			renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
-			System.out.println(player.getPosition());
 		}
 		
 		//shader.cleanUp();
