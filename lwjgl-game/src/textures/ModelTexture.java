@@ -2,7 +2,16 @@ package textures;
 
 public class ModelTexture {
 	private int textureID;
+	private int normalMap;
 	
+	public int getNormalMap() {
+		return normalMap;
+	}
+
+	public void setNormalMap(int normalMap) {
+		this.normalMap = normalMap;
+	}
+
 	private float shineDamper = 1; // intensity of light reflection based on distance between reflection line and camera
 	private float reflectivity = 0;
 	

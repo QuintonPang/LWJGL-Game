@@ -39,6 +39,21 @@ public class Loader {
 		storeDataInAttributeList(0,3,positions);
 		storeDataInAttributeList(1,2,textureCoords);
 		storeDataInAttributeList(2,3,normals);
+
+		unbindVAO();
+		//return new RawModel(vaoID,positions.length/3); // divide by 3 because there are x,y and z
+		return new RawModel(vaoID,indices.length);
+	}
+	
+	public RawModel loadToVAO(float[] positions, float[] textureCoords, float[] normals, float[] tangents, int[] indices) {
+		int vaoID = createVAO();
+		bindIndicesBuffer(indices);
+		// parameters: index in VAO, number of vectors, array to be stored
+		storeDataInAttributeList(0,3,positions);
+		storeDataInAttributeList(1,2,textureCoords);
+		storeDataInAttributeList(2,3,normals);
+		storeDataInAttributeList(3, 3, tangents);
+
 		unbindVAO();
 		//return new RawModel(vaoID,positions.length/3); // divide by 3 because there are x,y and z
 		return new RawModel(vaoID,indices.length);
@@ -58,7 +73,7 @@ public class Loader {
 			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
 			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D); // mipmapping
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_LINEAR_MIPMAP_LINEAR); // linear means transition smoothly
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , -0.4f); // more negative, mipmapping less noticable
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , -2.4f); // more negative, mipmapping less noticable
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

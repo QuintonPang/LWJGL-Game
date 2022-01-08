@@ -5,8 +5,11 @@ import java.util.List;
 import java.util.Random;
 
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import entities.Camera;
 import entities.Entity;
@@ -16,6 +19,7 @@ import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.RawModel;
 import models.TexturedModel;
+import normalMappingObjConverter.NormalMappedObjLoader;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -93,6 +97,9 @@ public class MainGameLoop {
 		terrains[1][0] = terrain3;
 		terrains[1][1] = terrain4;
 		
+		List<Terrain> terrainList = new ArrayList<Terrain>();
+		terrainList.add(terrain);
+		
 		//********** RENDERING ENTITIES **********
 		
 		//RawModel model = loader.loadToVAO(vertices, textureCoords, indices);
@@ -107,7 +114,49 @@ public class MainGameLoop {
 		
 		List<Entity>monkeys = new ArrayList<Entity>();
 		
+		List<Entity>normalMapEntities = new ArrayList<Entity>();
+
+		
+		//******************NORMAL MAP MODELS************************
+		
+		TexturedModel barrelModel = new TexturedModel(NormalMappedObjLoader.loadOBJ("barrel", loader),
+				new ModelTexture(loader.loadTexture("barrel")));
+		barrelModel.getTexture().setNormalMap(loader.loadTexture("barrelNormal"));
+		barrelModel.getTexture().setShineDamper(10);
+		barrelModel.getTexture().setReflectivity(0.5f);
+		/*
+		TexturedModel crateModel = new TexturedModel(NormalMappedObjLoader.loadOBJ("crate", loader),
+				new ModelTexture(loader.loadTexture("crate")));
+		crateModel.getTexture().setNormalMap(loader.loadTexture("crateNormal"));
+		crateModel.getTexture().setShineDamper(10);
+		crateModel.getTexture().setReflectivity(0.5f);
+		
+		TexturedModel boulderModel = new TexturedModel(NormalMappedObjLoader.loadOBJ("boulder", loader),
+				new ModelTexture(loader.loadTexture("boulder")));
+		boulderModel.getTexture().setNormalMap(loader.loadTexture("boulderNormal"));
+		boulderModel.getTexture().setShineDamper(10);
+		boulderModel.getTexture().setReflectivity(0.5f);
+		*/
+		
+		//**********Water Renderer Set-up************************
+		/*
+		WaterFrameBuffers buffers = new WaterFrameBuffers();
+		WaterShader waterShader = new WaterShader();
+		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader, renderer.getProjectionMatrix(), buffers);
+		List<WaterTile> waters = new ArrayList<WaterTile>();
+		WaterTile water = new WaterTile(75, -75, 0);
+		waters.add(water);
+		*/
 		Random random = new Random();
+		
+		//************ENTITIES*******************
+		
+		Entity barrelEntity = new Entity(barrelModel, new Vector3f(0, 10, 0), 0, 0, 0, 1f);
+		//Entity entity2 = new Entity(boulderModel, new Vector3f(85, 10, -75), 0, 0, 0, 1f);
+		//Entity entity3 = new Entity(crateModel, new Vector3f(65, 10, -75), 0, 0, 0, 0.04f);
+		normalMapEntities.add(barrelEntity);
+		//normalMapEntities.add(entity2);
+		//normalMapEntities.add(entity3);
 		
 		for(int i=0;i<10;i++) {
 			float x = random.nextFloat()*500-250;
@@ -218,14 +267,33 @@ public class MainGameLoop {
 				Terrain terrainIlluminated = terrains[gridX][gridZ];
 				lights.add(new Light(new Vector3f(picker.getCurrentTerrainPoint().x,terrainIlluminated.getHeightOfTerrain(picker.getCurrentTerrainPoint().x,picker.getCurrentTerrainPoint().z)+3,picker.getCurrentTerrainPoint().z), new Vector3f(2,0,0), new Vector3f(1,0.01f,0.002f)));
 			} 
-			
+			/*
 			renderer.processTerrain(terrain);
 			renderer.processTerrain(terrain2);
 			renderer.processTerrain(terrain3);
 			renderer.processTerrain(terrain4);
-
+			*/
 			renderer.processEntity(player);
 			
+			//render reflection texture
+			
+			//buffers.bindReflectionFrameBuffer();
+			//float distance = 2 * (camera.getPosition().y - water.getHeight());
+			//camera.getPosition().y -= distance;
+			//camera.invertPitch();
+			renderer.renderScene(monkeys, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 /*-water.getHeight()+1*/));
+			//camera.getPosition().y += distance;
+			//camera.invertPitch();
+			
+			//render refraction texture
+			//buffers.bindRefractionFrameBuffer();
+			//renderer.renderScene(entities, normalMapEntities, terrains, lights, camera, new Vector4f(0, -1, 0, water.getHeight()));
+			
+			//render to screen
+			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
+			//buffers.unbindCurrentFrameBuffer();	
+			//renderer.renderScene(entities, normalMapEngtities, terrains, lights, camera, new Vector4f(0, -1, 0, 100000));	
+			//waterRenderer.render(waters, camera, sun);
 			
 			
 			for(Entity monkey:monkeys) {
@@ -250,7 +318,7 @@ public class MainGameLoop {
 			renderer.render(entity,shader);
 			shader.stop();
 			*/
-			renderer.render(lights, camera);
+			//renderer.render(lights, camera);
 			guiRenderer.render(guis);
 			DisplayManager.updateDisplay();
 		}

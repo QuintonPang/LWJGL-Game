@@ -11,6 +11,7 @@ import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector2f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 public abstract class ShaderProgram {
 	private int programID;
@@ -61,6 +62,11 @@ public abstract class ShaderProgram {
 		matrix.store(matrixBuffer);
 		matrixBuffer.flip();
 		GL20.glUniformMatrix4(location, false, matrixBuffer);
+	}
+	
+	
+	protected void loadVector(int location, Vector4f vector){
+		GL20.glUniform4f(location,vector.x,vector.y,vector.z, vector.w);
 	}
 	
 	protected abstract void getAllUniformLocations();
