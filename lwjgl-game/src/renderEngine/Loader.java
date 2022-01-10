@@ -45,6 +45,17 @@ public class Loader {
 		return new RawModel(vaoID,indices.length);
 	}
 	
+	public int loadToVAO(float[] positions, float[] textureCoords) {
+		int vaoID = createVAO();
+		// parameters: index in VAO, number of vectors, array to be stored
+		storeDataInAttributeList(0,2,positions);
+		storeDataInAttributeList(1,2,textureCoords);
+
+		unbindVAO();
+		//return new RawModel(vaoID,positions.length/3); // divide by 3 because there are x,y and z
+		return vaoID;
+	}
+	
 	public RawModel loadToVAO(float[] positions, float[] textureCoords, float[] normals, float[] tangents, int[] indices) {
 		int vaoID = createVAO();
 		bindIndicesBuffer(indices);
@@ -73,7 +84,7 @@ public class Loader {
 			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
 			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D); // mipmapping
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_LINEAR_MIPMAP_LINEAR); // linear means transition smoothly
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , -2.4f); // more negative, mipmapping less noticable
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , -2.4f); // more negative, mipmapping less noticeable
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -94,6 +105,50 @@ public class Loader {
 		return textureID;
 		
 	}
+	
+	public int loadTexture(String fileName, float bias) {
+		Texture texture = null;
+		try {
+			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
+			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D); // mipmapping
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_LINEAR_MIPMAP_LINEAR); // linear means transition smoothly
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , bias); // more negative, mipmapping less noticeable
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		int textureID = texture.getTextureID();
+		textures.add(textureID);
+		return textureID;
+		
+	}
+	
+	// to differentiate mipmapping between fonts and entities
+	public int loadTextureAtlas(String fileName) {
+		Texture texture = null;
+		try {
+			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
+			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D); // mipmapping
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_LINEAR_MIPMAP_LINEAR); // linear means transition smoothly
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , 0); // more negative, mipmapping less noticeable
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		   
+		int textureID = texture.getTextureID();
+		textures.add(textureID);
+		return textureID;
+		
+	}
+	
 	
 	// delete all VAOs and VBOs
 	public void cleanUp() {

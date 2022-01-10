@@ -1,5 +1,6 @@
 package engineTester;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,6 +16,9 @@ import entities.Camera;
 import entities.Entity;
 import entities.Light;
 import entities.Player;
+import fontMeshCreator.FontType;
+import fontMeshCreator.GUIText;
+import fontRendering.TextMaster;
 import guis.GuiRenderer;
 import guis.GuiTexture;
 import models.RawModel;
@@ -24,8 +28,6 @@ import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
 import renderEngine.OBJLoader;
-import renderEngine.EntityRenderer;
-import shaders.StaticShader;
 import terrains.Terrain;
 import textures.ModelTexture;
 import textures.TerrainTexture;
@@ -72,6 +74,13 @@ public class MainGameLoop {
 				1,0 //V3
 		};
 		*/
+		
+		// ********** FONT **********
+		TextMaster.init(loader);
+		FontType font = new FontType(loader.loadTexture("fonts/candara"), new File("res/fonts/candara.fnt"));
+		GUIText text = new GUIText("This is a text!",5 , font, new Vector2f(0,0), 1f, true);
+		text.setColour(0, 0, 0);
+		// ********************
 		
 		// ********** TERRAIN TEXTURE STUFF **********
 		
@@ -236,7 +245,6 @@ public class MainGameLoop {
 		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(0,100,0),0,0,0,1);
 	
 		Camera camera = new Camera(player);
-		
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
 		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"),new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
 		guis.add(gui);
@@ -320,10 +328,12 @@ public class MainGameLoop {
 			*/
 			//renderer.render(lights, camera);
 			guiRenderer.render(guis);
+			TextMaster.render();
 			DisplayManager.updateDisplay();
 		}
 		
 		//shader.cleanUp();
+		TextMaster.cleanUp();
 		guiRenderer.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
