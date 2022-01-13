@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
@@ -24,6 +25,9 @@ import guis.GuiTexture;
 import models.RawModel;
 import models.TexturedModel;
 import normalMappingObjConverter.NormalMappedObjLoader;
+import particles.ParticleMaster;
+import particles.ParticleSystem;
+import particles.ParticleTexture;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -42,9 +46,11 @@ public class MainGameLoop {
 		
 		Loader loader = new Loader();
 		
-		//StaticShader shader = new StaticShader();
+		MasterRenderer renderer = new MasterRenderer(loader);
 		
-		//Renderer renderer = new Renderer(shader);
+		// StaticShader shader = new StaticShader();
+		
+		// Renderer renderer = new Renderer(shader);
 		
 		/*
 		// list of vertices of quad to be rendered
@@ -74,6 +80,10 @@ public class MainGameLoop {
 				1,0 //V3
 		};
 		*/
+		
+		/* PARTICLE SYSTEM */
+		ParticleMaster.init(loader, renderer.getProjectionMatrix());
+		ParticleSystem particleSystem = new ParticleSystem(new ParticleTexture(loader.loadTexture("particles/particleAtlas"),4,true), 40, 10, 0.1f, 1, 10);
 		
 		// ********** FONT **********
 		TextMaster.init(loader);
@@ -238,7 +248,6 @@ public class MainGameLoop {
 		//lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
 		// ********************
 		
-		MasterRenderer renderer = new MasterRenderer(loader);
 		
 		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
 		playerTexture.setUseFakeLighting(true);
@@ -266,6 +275,7 @@ public class MainGameLoop {
 			camera.move();
 			player.move(terrains[gridX][gridZ]);  // gets input of keyboard
 			
+			ParticleMaster.update(camera);
 			picker.update();
 			
 			if(picker.getCurrentTerrainPoint()!=null) { // if cursor is not pointing away from terrain
@@ -327,14 +337,21 @@ public class MainGameLoop {
 			shader.stop();
 			*/
 			//renderer.render(lights, camera);
+			if(Keyboard.isKeyDown(Keyboard.KEY_Q)) {
+				// new vector3f of player so that player's position does not get affected
+				//new Particle(new Vector3f(player.getPosition()),new Vector3f(0,30,0),1,4,0,1);
+				particleSystem.generateParticles(player.getPosition());
+			}
 			guiRenderer.render(guis);
 			TextMaster.render();
+			ParticleMaster.renderParticles(camera);
 			DisplayManager.updateDisplay();
 		}
 		
 		//shader.cleanUp();
 		TextMaster.cleanUp();
 		guiRenderer.cleanUp();
+		ParticleMaster.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
 		// after exiting, close display

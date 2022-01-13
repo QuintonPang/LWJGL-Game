@@ -18,7 +18,7 @@ public class DisplayManager {
 	private static float delta;
 	
 	public static void createDisplay() {
-		ContextAttribs attribs = new ContextAttribs(3,2) // takes in version of opengl
+		ContextAttribs attribs = new ContextAttribs(3,3) // takes in version of opengl
 		//settings
 		.withForwardCompatible(true)
 		.withProfileCore(true);

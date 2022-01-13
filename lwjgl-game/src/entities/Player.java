@@ -13,7 +13,7 @@ public class Player extends Entity {
 	private static final float TURN_SPEED = 160;
 	
 	// for jumping
-	private static final float GRAVITY = -50;
+	public static final float GRAVITY = -50;
 	private static final float JUMP_POWER = 30; // how high the player jumps
 	
 	private static final float TERRAIN_HEIGHT = 0; // prevent from falling throught terrain
