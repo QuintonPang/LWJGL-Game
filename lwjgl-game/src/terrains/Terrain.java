@@ -92,6 +92,8 @@ public class Terrain {
 
 	private RawModel generateTerrain(Loader loader, String heightMap){
 		
+		HeightsGenerator generator = new HeightsGenerator();
+		
 		BufferedImage image = null;
 		try {
 			image = ImageIO.read(new File("res/"+heightMap+".png"));
@@ -100,7 +102,8 @@ public class Terrain {
 			e.printStackTrace();
 		}
 		
-		int VERTEX_COUNT = image.getHeight();
+		// int VERTEX_COUNT = image.getHeight();
+		int VERTEX_COUNT = 128;
 		heights = new float[VERTEX_COUNT][VERTEX_COUNT];
 		int count = VERTEX_COUNT * VERTEX_COUNT;
 		float[] vertices = new float[count * 3];
@@ -111,11 +114,11 @@ public class Terrain {
 		for(int i=0;i<VERTEX_COUNT;i++){
 			for(int j=0;j<VERTEX_COUNT;j++){
 				vertices[vertexPointer*3] = (float)j/((float)VERTEX_COUNT - 1) * getSize();
-				float height = getHeight(j,i,image);
+				float height = getHeight(j,i,generator);
 				heights[j][i] = height;
 				vertices[vertexPointer*3+1] = height;
 				vertices[vertexPointer*3+2] = (float)i/((float)VERTEX_COUNT - 1) * getSize();
-				Vector3f normal = calculateNormal(j,i,image);
+				Vector3f normal = calculateNormal(j,i,generator);
 				normals[vertexPointer*3] = normal.x;
 				normals[vertexPointer*3+1] = normal.y;
 				normals[vertexPointer*3+2] = normal.z;
@@ -161,6 +164,12 @@ public class Terrain {
 		return height;
 	}
 	
+	private float getHeight(int x, int z, HeightsGenerator generator) {
+		return generator.generateHeight(x, z);
+	}
+	
+
+	
 	// calculate normal line for terrain with different heights
 	private Vector3f calculateNormal(int x, int z, BufferedImage image) {
 		float heightL = getHeight(x-1,z,image);
@@ -171,6 +180,17 @@ public class Terrain {
 		normal.normalise();
 		return normal;
 	}
+	
+	private Vector3f calculateNormal(int x, int z, HeightsGenerator generator) {
+		float heightL = getHeight(x-1,z,generator);
+		float heightR = getHeight(x+1,z,generator);
+		float heightD = getHeight(x,z-1,generator);
+		float heightU = getHeight(x,z+1,generator);
+		Vector3f normal = new Vector3f(heightL-heightR,2f,heightD-heightU);
+		normal.normalise();
+		return normal;
+	}
+
 
 	public static float getSize() {
 		return SIZE;

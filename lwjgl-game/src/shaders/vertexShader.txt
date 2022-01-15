@@ -11,6 +11,8 @@ out vec3 toLightVector[4]; // vector from vertex to light source
 out vec3 toCameraVector; // from surface to camera
 out float visibility; // fog effect 
 
+out vec4 shadowCoords;
+
 uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix; // alters projection based on z coordinate
 uniform mat4 viewMatrix; // moving the camera
@@ -21,9 +23,15 @@ uniform float useFakeLighting;
 uniform float numberOfRows;
 uniform vec2 offset;
 
+uniform mat4 toShadowMapSpace;
+
 // for fog effect
 const float density = 0.003;
 const float gradient = 5.0;
+
+// for shadow
+const float shadowDistance = 150.0;
+const float transitionDistance = 10.0;
 
 uniform vec4 plane;
 
@@ -32,6 +40,8 @@ void main(void){
 	// position of world after moving
 	vec4 worldPosition = transformationMatrix *  vec4(position.x,position.y,position.z,1.0);
 	
+	// shadow coordinates
+	shadowCoords = toShadowMapSpace * worldPosition;
 	
 	gl_ClipDistance[0] = dot(worldPosition, plane);
 	
@@ -57,6 +67,11 @@ void main(void){
 	float distance = length(positionRelativeToCam.xyz);
 	visibility = exp(-pow((distance*density),gradient)); // formula for visibility in fog
 	visibility =  clamp(visibility,0.0,1.0); // clamp between 0 and 1
+	
+	distance = distance - ( shadowDistance - transitionDistance );
+	distance /= transitionDistance;
+	// everything before transition area has a value of 1, after it has a value of 0
+	shadowCoords.w = clamp(1.0-distance, 0.0, 1.0);
 }
 
 // output to fragmentShader

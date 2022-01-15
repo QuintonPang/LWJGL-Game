@@ -37,6 +37,10 @@ import textures.ModelTexture;
 import textures.TerrainTexture;
 import textures.TerrainTexturePack;
 import toolbox.MousePicker;
+import water.WaterFrameBuffers;
+import water.WaterRenderer;
+import water.WaterShader;
+import water.WaterTile;
 
 public class MainGameLoop {
 
@@ -45,8 +49,13 @@ public class MainGameLoop {
 		DisplayManager.createDisplay();
 		
 		Loader loader = new Loader();
-		
-		MasterRenderer renderer = new MasterRenderer(loader);
+			
+		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
+		playerTexture.setUseFakeLighting(true);
+		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(-500,100,-500),0,0,0,1);
+	
+		Camera camera = new Camera(player);
+		MasterRenderer renderer = new MasterRenderer(loader, camera);
 		
 		// StaticShader shader = new StaticShader();
 		
@@ -118,6 +127,7 @@ public class MainGameLoop {
 		
 		List<Terrain> terrainList = new ArrayList<Terrain>();
 		terrainList.add(terrain);
+		
 		
 		//********** RENDERING ENTITIES **********
 		
@@ -196,8 +206,8 @@ public class MainGameLoop {
 		fernTexture.setNumberOfRows(2);
 		
 		for(int i=0;i<1500;i++) {
-			float x = random.nextFloat()*1000-500;
-			float z = random.nextFloat()*-300;
+			float x = random.nextFloat()*-500;
+			float z = random.nextFloat()*-500;
 			int gridX = (int) (Math.floor(x/Terrain.getSize())) + 1;
 			int gridZ = (int) (Math.floor(z/Terrain.getSize())) + 1;
 			float y = terrains[gridX][gridZ].getHeightOfTerrain(x, z);
@@ -241,26 +251,60 @@ public class MainGameLoop {
 		
 		// ********** LIGHTS **********
 		List<Light> lights = new ArrayList<Light>();
-		Light light = new Light(new Vector3f(0,10000,-7000), new Vector3f(0.4f,0.4f,0.4f),new Vector3f(0.25f,0,0)); // smaller the value of attenuation, the greater the range of illumination
+		Light light = new Light(new Vector3f(1000000,1500000,-1000000), new Vector3f(1.3f,1.3f,1.3f),new Vector3f(1,0,0)); // smaller the value of attenuation, the greater the range of illumination
 		lights.add(light);
 		//lights.add(new Light(new Vector3f(-185,10,-293), new Vector3f(10,0,0),new Vector3f(1,0.01f,0.002f)));
 		//lights.add(new Light(new Vector3f(270,17,-300), new Vector3f(0,2,2), new Vector3f(1,0.01f,0.002f)));
 		//lights.add(new Light(new Vector3f(293,7,-305), new Vector3f(2,2,0), new Vector3f(1,0.01f,0.002f)));
 		// ********************
 		
-		
-		ModelTexture playerTexture = new ModelTexture(loader.loadTexture("playerTexture2"));
-		playerTexture.setUseFakeLighting(true);
-		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(0,100,0),0,0,0,1);
-	
-		Camera camera = new Camera(player);
+		// ********** GUIs **********
 		List<GuiTexture> guis = new ArrayList<GuiTexture>();
+		
 		GuiTexture gui = new GuiTexture(loader.loadTexture("socuwan"),new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
+		// image of map of shadows to be rendered
+		// GuiTexture shadowMap = new GuiTexture(renderer.getShadowMapTexture(), new Vector2f(0.5f,0.5f), new Vector2f(0.5f,0.5f));
+		
 		guis.add(gui);
+		// guis.add(shadowMap);
 		
 		GuiRenderer guiRenderer = new GuiRenderer(loader);
+		// ********************
 		
 		MousePicker picker = new MousePicker(camera, renderer.getProjectionMatrix(),terrains);
+		
+		// *********** ENTITIES **********
+		List<Entity> entities = new ArrayList<Entity>();
+		for(Entity monkey:monkeys) {
+			entities.add(monkey);
+		}
+		for(Entity fern:ferns) {
+			entities.add(fern);	
+		}
+		for(Entity tree:trees) {
+			entities.add(tree);	
+		}
+		for(Entity lowPolyTree:lowPolyTrees) {
+			entities.add(lowPolyTree);		
+		}
+		entities.add(player);
+		// ********************
+		
+		// ********** WATER **********
+		
+		WaterShader waterShader = new WaterShader();
+		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader, null, 0, 0, null);
+		List<WaterTile>waters = new ArrayList<WaterTile>();
+		WaterTile water = new WaterTile(75,-75,0);
+		waters.add(water);
+		WaterFrameBuffers fbos = new WaterFrameBuffers();
+		
+		GuiTexture reflection= new GuiTexture(fbos.getReflectionTexture(), new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
+		GuiTexture refraction= new GuiTexture(fbos.getRefractionTexture(), new Vector2f(-0.5f,0.5f), new Vector2f(0.25f,0.25f));
+		guis.add(reflection);
+		guis.add(refraction);
+		
+		// ********************
 		
 		while(!Display.isCloseRequested()) {
 			
@@ -268,6 +312,23 @@ public class MainGameLoop {
 			// render
 			//entity.increasePosition(0, 0, -0.1f);
 			//entity.increaseRotation(0, 1, 0);
+			
+			// clip distance (any point with negative value is not rendered)
+			GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
+			
+			// for reflection
+			float distance = 2 * (camera.getPosition().getY() - water.getHeight);
+			camera.getPosition().y-=distance;
+			camera.invertPitch();
+			fbos.bindReflectionFrameBuffer();
+			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0,1,0,-water.getHeight())); // pointing upwards
+			camera.getPosition().y+=distance;
+			camera.invertPitch();
+			// for refraction
+			fbos.bindRefractionFrameBuffer()
+			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0,-1,0,water.getHeight())); // render everything under the water
+			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
+			fbos.unbindCurrentFrameBuffer(); // switch back to default buffer
 			
 			int gridX = (int) (Math.floor(player.getPosition().x/Terrain.getSize())) + 1;
 			int gridZ = (int) (Math.floor(player.getPosition().z/Terrain.getSize())) + 1;
@@ -277,6 +338,8 @@ public class MainGameLoop {
 			
 			ParticleMaster.update(camera);
 			picker.update();
+			
+			renderer.renderShadowMap(entities, light);
 			
 			if(picker.getCurrentTerrainPoint()!=null) { // if cursor is not pointing away from terrain
 				//Entity monkeyFollowsCursor = new Entity(texturedModel,picker.getCurrentTerrainPoint(),0,0,0,2);	
@@ -299,7 +362,7 @@ public class MainGameLoop {
 			//float distance = 2 * (camera.getPosition().y - water.getHeight());
 			//camera.getPosition().y -= distance;
 			//camera.invertPitch();
-			renderer.renderScene(monkeys, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 /*-water.getHeight()+1*/));
+			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 /*-water.getHeight()+1*/));
 			//camera.getPosition().y += distance;
 			//camera.invertPitch();
 			
@@ -316,16 +379,6 @@ public class MainGameLoop {
 			
 			for(Entity monkey:monkeys) {
 				monkey.increaseRotation(0, 1, 0);
-				renderer.processEntity(monkey);
-			}
-			for(Entity fern:ferns) {
-				renderer.processEntity(fern);
-			}
-			for(Entity tree:trees) {
-				renderer.processEntity(tree);
-			}
-			for(Entity lowPolyTree:lowPolyTrees) {
-				renderer.processEntity(lowPolyTree);
 			}
 			/*
 			renderer.prepare();
@@ -342,6 +395,7 @@ public class MainGameLoop {
 				//new Particle(new Vector3f(player.getPosition()),new Vector3f(0,30,0),1,4,0,1);
 				particleSystem.generateParticles(player.getPosition());
 			}
+			waterRenderer.render(waters, camera, light);
 			guiRenderer.render(guis);
 			TextMaster.render();
 			ParticleMaster.renderParticles(camera);
@@ -352,6 +406,7 @@ public class MainGameLoop {
 		TextMaster.cleanUp();
 		guiRenderer.cleanUp();
 		ParticleMaster.cleanUp();
+		fbos.cleanUp();
 		renderer.cleanUp();
 		loader.cleanUp();
 		// after exiting, close display

@@ -89,5 +89,10 @@ public class Camera {
 	private float calculateVerticalDistance() {
 		return (float) (distanceFromPlayer * Math.sin(Math.toRadians(pitch)));
 	}
+
+
+	public void invertPitch() {
+		this.pitch = -pitch;	
+	}
 	
 }
