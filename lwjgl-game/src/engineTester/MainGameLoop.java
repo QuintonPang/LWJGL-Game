@@ -317,7 +317,7 @@ public class MainGameLoop {
 			GL11.glEnable(GL30.GL_CLIP_DISTANCE0);
 			
 			// for reflection
-			float distance = 2 * (camera.getPosition().getY() - water.getHeight);
+			float distance = 2 * (camera.getPosition().getY() - water.getHeight());
 			camera.getPosition().y-=distance;
 			camera.invertPitch();
 			fbos.bindReflectionFrameBuffer();
@@ -325,7 +325,7 @@ public class MainGameLoop {
 			camera.getPosition().y+=distance;
 			camera.invertPitch();
 			// for refraction
-			fbos.bindRefractionFrameBuffer()
+			fbos.bindRefractionFrameBuffer();
 			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0,-1,0,water.getHeight())); // render everything under the water
 			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
 			fbos.unbindCurrentFrameBuffer(); // switch back to default buffer

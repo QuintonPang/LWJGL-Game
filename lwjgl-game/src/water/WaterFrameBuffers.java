@@ -48,9 +48,10 @@ public class WaterFrameBuffers {
     public void bindRefractionFrameBuffer() {//call before rendering to this FBO
         bindFrameBuffer(refractionFrameBuffer,REFRACTION_WIDTH,REFRACTION_HEIGHT);
     }
-    
+     
+    // unbind our own frame buffer and bind to default frame buffer
     public void unbindCurrentFrameBuffer() {//call after rendering to texture
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0); 
         GL11.glViewport(0, 0, Display.getWidth(), Display.getHeight());
     }
 
@@ -80,6 +81,7 @@ public class WaterFrameBuffers {
         unbindCurrentFrameBuffer();
     }
     
+    // bind to our own frame buffer which we created
     private void bindFrameBuffer(int frameBuffer, int width, int height){
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);//To make sure the texture isn't bound
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, frameBuffer);
