@@ -19,18 +19,18 @@ import toolbox.Maths;
 
 public class WaterRenderer {
 
-	private static final String DUDV_MAP = "waterDUDV";
-    private static final String NORMAL_MAP = "normalMap";
+	private static final String DUDV_MAP = "water/waterDUDV";
+    private static final String NORMAL_MAP = "water/normalMap";
 	private static final float WAVE_SPEED = 0.03f; // was 0.05
 
 	private RawModel quad;
 	private WaterShader shader;
 	private WaterFrameBuffers fbos;
 
-    private float waterTiling = 4f; // was 4
+    private float waterTiling = 4f;
 	private float moveFactor = 0f;
-    private float waveStrength = 0.04f; // was 0.04
-    private float waterReflectivity = 2f; // for fresnel effect, thinmatrix had 0.5
+    private float waveStrength = 0.04f;
+    private float waterReflectivity = 0.5f;
     private float shineDamper = 20.0f; // for normal maps
     private float reflectivity = 0.5f; // for normal maps
 
@@ -38,7 +38,7 @@ public class WaterRenderer {
 	private int normalMap;
 
 	public WaterRenderer(Loader loader, WaterShader shader, Matrix4f projectionMatrix,
-                         float nearPlane, float farPlane, WaterFrameBuffers fbos) {
+                         /*float nearPlane, float farPlane,*/ WaterFrameBuffers fbos) {
 		this.shader = shader;
 		this.fbos = fbos;
 		dudvTexture = loader.loadTexture(DUDV_MAP);
@@ -46,8 +46,8 @@ public class WaterRenderer {
 		shader.start();
 		shader.connectTextureUnits();
 		shader.loadProjectionMatrix(projectionMatrix);
-		shader.loadNearPlane(nearPlane);
-        shader.loadFarPlane(farPlane);
+//		shader.loadNearPlane(nearPlane);
+//      shader.loadFarPlane(farPlane);
 		shader.stop();
 		setUpVAO(loader);
 	}
@@ -67,20 +67,20 @@ public class WaterRenderer {
 	private void prepareRender(Camera camera, Light sun) {
 		shader.start();
 		shader.loadViewMatrix(camera);
+//
+//		if (Keyboard.isKeyDown(Keyboard.KEY_1))
+//		    waterTiling -= 0.1;
+//      if (Keyboard.isKeyDown(Keyboard.KEY_2))
+//            waterTiling += 0.1;
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_1))
-		    waterTiling -= 0.1;
-        if (Keyboard.isKeyDown(Keyboard.KEY_2))
-            waterTiling += 0.1;
-
-		shader.loadWaterTiling(waterTiling);
+//		shader.loadWaterTiling(waterTiling);
 		moveFactor += WAVE_SPEED * DisplayManager.getFrameTimeSeconds();
 		moveFactor %= 1;
 		shader.loadMoveFactor(moveFactor);
-        shader.loadWaveStrength(waveStrength); // set waveStrength to 0 to remove the dudvMap distortion
-        shader.loadWaterReflectivity(waterReflectivity); // e.g.  0.5
+//      shader.loadWaveStrength(waveStrength); // set waveStrength to 0 to remove the dudvMap distortion
+//      shader.loadWaterReflectivity(waterReflectivity); // e.g.  0.5
         shader.loadLight(sun);
-        shader.loadShineVariables(shineDamper, reflectivity);
+//       shader.loadShineVariables(shineDamper, reflectivity);
 		GL30.glBindVertexArray(quad.getVaoID());
 		GL20.glEnableVertexAttribArray(0);
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
@@ -94,6 +94,7 @@ public class WaterRenderer {
         GL13.glActiveTexture(GL13.GL_TEXTURE4);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, fbos.getRefractionDepthTexture());
 
+        // for soft edges
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_BLEND);
     }

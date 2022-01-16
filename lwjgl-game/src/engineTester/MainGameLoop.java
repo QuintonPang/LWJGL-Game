@@ -292,17 +292,22 @@ public class MainGameLoop {
 		
 		// ********** WATER **********
 		
-		WaterShader waterShader = new WaterShader();
-		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader, null, 0, 0, null);
-		List<WaterTile>waters = new ArrayList<WaterTile>();
-		WaterTile water = new WaterTile(75,-75,0);
-		waters.add(water);
 		WaterFrameBuffers fbos = new WaterFrameBuffers();
+		WaterShader waterShader = new WaterShader();
+		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader,renderer.getProjectionMatrix(), fbos);
+		List<WaterTile>waters = new ArrayList<WaterTile>();
+		// height indicates how high the water surface should be from the terrain
+		WaterTile water = new WaterTile(player.getPosition().x+4,player.getPosition().z,0);
+		WaterTile water2 = new WaterTile(player.getPosition().x,player.getPosition().z,0);
+		WaterTile water3 = new WaterTile(player.getPosition().x-4,player.getPosition().z,0);
+		waters.add(water);
+		waters.add(water2);
+		waters.add(water3);
 		
-		GuiTexture reflection= new GuiTexture(fbos.getReflectionTexture(), new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
-		GuiTexture refraction= new GuiTexture(fbos.getRefractionTexture(), new Vector2f(-0.5f,0.5f), new Vector2f(0.25f,0.25f));
-		guis.add(reflection);
-		guis.add(refraction);
+		// GuiTexture reflection= new GuiTexture(fbos.getReflectionTexture(), new Vector2f(0.5f,0.5f), new Vector2f(0.25f,0.25f));
+		// GuiTexture refraction= new GuiTexture(fbos.getRefractionTexture(), new Vector2f(-0.5f,0.5f), new Vector2f(0.25f,0.25f));
+//		guis.add(reflection);
+//		guis.add(refraction);
 		
 		// ********************
 		
@@ -321,7 +326,8 @@ public class MainGameLoop {
 			camera.getPosition().y-=distance;
 			camera.invertPitch();
 			fbos.bindReflectionFrameBuffer();
-			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0,1,0,-water.getHeight())); // pointing upwards
+			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0,1,0,-water.getHeight()+1)); // pointing upwards
+																																		// +1 to remove glitch
 			camera.getPosition().y+=distance;
 			camera.invertPitch();
 			// for refraction
@@ -332,7 +338,7 @@ public class MainGameLoop {
 			
 			int gridX = (int) (Math.floor(player.getPosition().x/Terrain.getSize())) + 1;
 			int gridZ = (int) (Math.floor(player.getPosition().z/Terrain.getSize())) + 1;
-			
+		
 			camera.move();
 			player.move(terrains[gridX][gridZ]);  // gets input of keyboard
 			

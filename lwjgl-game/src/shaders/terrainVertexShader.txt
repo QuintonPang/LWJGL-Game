@@ -29,8 +29,6 @@ const float gradient = 5.0;
 const float shadowDistance = 150.0;
 const float transitionDistance = 10.0;
 
-uniform vec4 plane;
-
 void main(void){
 	
 	// position of world after moving

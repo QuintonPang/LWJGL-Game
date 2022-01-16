@@ -1,0 +1,113 @@
+#version 400 core
+
+in vec4 clipSpace;
+in vec2 textureCoords;
+in vec3 toCameraVector;
+in vec3 fromLightVector;
+
+out vec4 out_Color;
+
+uniform sampler2D reflectionTexture;
+uniform sampler2D refractionTexture;
+uniform sampler2D dudvMap;
+uniform sampler2D normalMap;
+uniform sampler2D depthMap; // depth of water
+
+uniform float moveFactor; // moving water to make it look more realistic
+// uniform float waterReflectivity; // for fresnel effect
+uniform vec3 lightColor;
+
+// uniform float waveStrength;
+// uniform float shineDamper; 
+// uniform float reflectivity; 
+
+// uniform float nearPlane;
+// uniform float farPlane;
+
+const float waveStrength = 0.04;
+const float shineDamper = 20.0;
+const float reflectivity = 0.5;
+
+void main(void) {
+
+    // ndc = normalized device coordinates
+    vec2 ndc = (clipSpace.xy/clipSpace.w)/2.0 + 0.5; // gives coordinates system from 0 to 1
+    vec2 refractTexCoords = vec2(ndc.x, ndc.y);
+    vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
+	float near = 0.1;
+    float far = 1000.0;
+    
+    // float near = nearPlane;
+    // float far = farPlane;
+    float depth = texture(depthMap, refractTexCoords).r;
+    float floorDistance = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
+
+    depth = gl_FragCoord.z;
+    float waterDistance = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
+    float waterDepth = floorDistance - waterDistance;
+
+	vec2 distortedTexCoords = texture(dudvMap, vec2(textureCoords.x + moveFactor, textureCoords.y)).rg * 0.1;
+    distortedTexCoords = textureCoords + vec2(distortedTexCoords.x, distortedTexCoords.y  + moveFactor);
+ 	// f makes distortion very small at small water depths
+    float f = clamp(waterDepth / 20.0, 0.0, 1.0);
+ 	// convert to x and z with negative values
+    vec2 totalDistortion = (texture(dudvMap, distortedTexCoords).rg * 2.0 - 1.0) * waveStrength * f;
+    
+    refractTexCoords += totalDistortion;
+    // refractTexCoords = clamp(refractTexCoords, minTexCoord, maxTexCoord);
+
+    reflectTexCoords += totalDistortion;
+    // reflectTexCoords.x = clamp(reflectTexCoords.x, minTexCoord, maxTexCoord);
+    // reflectTexCoords.y = clamp(reflectTexCoords.y, -maxTexCoord, -minTexCoord);
+	
+    vec4 reflectColor = texture(reflectionTexture, reflectTexCoords);
+    vec4 refractColor = texture(refractionTexture, refractTexCoords);
+	
+	// original values are 0 to 1, here it is converted to -1 to 1
+	// multiply by waveStrength to make distortion a bit less
+	// vec2 distortion1 = (texture(dudvMap, vec2(textureCoords.x + moveFactor, textureCoords.y)).rg * 2.0 - 1.0)* waveStrength;
+	// vec2 distortion2 = (texture(dudvMap, vec2(-textureCoords.x + moveFactor, textureCoords.y + moveFactor)).rg * 2.0 - 1.0)* waveStrength;
+	// vec2 totalDistortion = distortion1 + distortion2;
+	// reflectTexCoords += totalDistortion;
+	// refractTexCoords += totalDistortion;
+
+	
+	 // Normal map
+    vec4 normalMapColor = texture(normalMap, distortedTexCoords);
+     // convert to x and z with negative values for red and green
+     // increasing y component makes it look flatter
+    vec3 normal = vec3(normalMapColor.r * 2.0 - 1.0, normalMapColor.b * 3 , normalMapColor.g * 2.0 - 1.0);
+    normal = normalize(normal);
+    
+    // Fresnel calculation
+    vec3 viewVector = normalize(toCameraVector);
+    float refractiveFactor = dot(viewVector, normal); // how transparent it should be
+    refractiveFactor = pow(refractiveFactor, 10.0); // the higher the power, the more refractive
+    refractiveFactor = clamp(refractiveFactor, 0.0, 1.0);
+
+    vec3 reflectedLight = reflect(normalize(fromLightVector), normal);
+    float specular = max(dot(reflectedLight, viewVector), 0.0);
+    specular = pow(specular, shineDamper);
+    // soften specular highlights near water edge
+    float g = clamp(waterDepth / 5.0, 0.0, 1.0);
+    vec3 specularHighlights = lightColor * specular * reflectivity * g;
+   
+    // plain dark blue
+	//out_Color = vec4(0.0, 0.0, 1.0, 1.0);
+	out_Color = mix(reflectColor, refractColor, refractiveFactor);
+
+	// add blue tint and specular highlights
+	out_Color = mix(out_Color, vec4(0.0, 0.3, 0.5, 1.0), 0.2) + vec4(specularHighlights,0.0);
+	
+	// sets to normal map
+	//out_Color = normalMapColor;
+	// deeper area is white in color whereas shallower area is black in color
+	//out_Color = vec4(waterDepth/50.0);
+
+	//out_Color = mix(vec4(skyColor, 1.0), out_Color, visibility);
+
+	// as water depth increase, it is less transparent
+	// alpha value of 0 is transparent and transparency decreases and alpha value increases
+	// at water depth of 5, alpha value is 1
+	out_Color.a = clamp(waterDepth/5.0, 0.0, 1.0);
+}

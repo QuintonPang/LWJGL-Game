@@ -1,8 +1,31 @@
 package water;
 
-public interface WaterTile {
-	public float getHeight();
-	public float getX();
-	public float getZ();
-	public float getSize();
+public class WaterTile {
+
+	public static final float TILE_SIZE = 60;
+
+	private float height;
+	private float x,z;
+	
+	public WaterTile(float x, float z, float height) {
+		this.x = x;
+		this.z = z;
+		this.height = height;
+	}
+
+	public float getHeight() {
+		return height;
+	}
+
+	public float getX() {
+		return x;
+	}
+
+	public float getZ() {
+		return z;
+	}
+	
+	public float getSize() {
+		return TILE_SIZE;
+	}
 }

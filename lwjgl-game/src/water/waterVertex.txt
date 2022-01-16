@@ -1,4 +1,4 @@
-#version 140
+#version 400
 
 in vec2 position;
 
@@ -15,11 +15,14 @@ uniform vec3 lightPosition;
 
 uniform vec3 cameraPosition;
 
-uniform float waterTiling;
+// uniform float waterTiling;
 
 // horizontal plane (x,y,z,distance)
-// const vec4 plane = vec4(0,-1,0,15);
-uniform vec4 plane;
+const vec4 plane = vec4(0,-1,0,15);
+// uniform vec4 plane;
+
+// surface area of water
+const float tiling =  4.0;
 
 void main(void) {
 
@@ -33,7 +36,7 @@ void main(void) {
     
     clipSpace = projectionMatrix * viewMatrix * worldPosition;
 	gl_Position = clipSpace;
-	textureCoords = vec2(position.x / 2.0 + 0.5, position.y / 2.0 + 0.5) * waterTiling;
+	textureCoords = vec2(position.x / 2.0 + 0.5, position.y / 2.0 + 0.5) * tiling;
 	toCameraVector = cameraPosition - worldPosition.xyz;
 	fromLightVector = worldPosition.xyz - lightPosition;
 }

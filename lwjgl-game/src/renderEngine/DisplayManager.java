@@ -25,7 +25,9 @@ public class DisplayManager {
 		
 		 try {
 			Display.setDisplayMode(new DisplayMode(WIDTH,HEIGHT));
-			Display.create(new PixelFormat(),attribs);
+			// Display.create(new PixelFormat(),attribs);
+			// anti-aliasing
+			Display.create(new PixelFormat().withSamples(8),attribs); // the higher the samples, the better the quality, the more expensive
 			Display.setTitle("My First OpenGL Game!"); //title of screen
 		} catch (LWJGLException e) {
 			e.printStackTrace();

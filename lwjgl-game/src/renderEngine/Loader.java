@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL14;
@@ -17,6 +18,7 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengl.GL33;
+import org.lwjgl.opengl.GLContext;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
@@ -142,7 +144,7 @@ public class Loader {
 			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
 			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D); // mipmapping
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_LINEAR_MIPMAP_LINEAR); // linear means transition smoothly
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , bias); // more negative, mipmapping less noticeable
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , bias); // lesser value, mipmapping less noticeable
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -164,7 +166,12 @@ public class Loader {
 			texture = TextureLoader.getTexture("PNG", new FileInputStream("res/"+fileName+".png"));
 			GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D); // mipmapping
 			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER,GL11.GL_LINEAR_MIPMAP_LINEAR); // linear means transition smoothly
-			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , 0); // more negative, mipmapping less noticeable
+			GL11.glTexParameterf(GL11.GL_TEXTURE_2D,GL14.GL_MAX_TEXTURE_LOD_BIAS , 0); // lesser value, mipmapping less noticeable
+			// check whether anisotropic is supported by driver
+			if(GLContext.getCapabilities().GL_EXT_texture_filter_anisotropic) { 
+				float amount = Math.min(4f,GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)); //the higher the value, the better the quality, the higher the performance cost
+				GL11.glTexParameterf(GL11.GL_TEXTURE_2D, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT, amount);
+			}else System.out.println("Anisotropic is not supported!");
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
