@@ -18,16 +18,22 @@ const float borderEdge = 0.1;
 
 const vec3 outlineColor = vec3(1.0,0.0,0.0);
 
+// to prevent error when exporting as jar file
+float smoothlyStep(float edge0, float edge1, float x){
+	float t = clamp((x-edge0) / (edge1 - edge0 ), 0.0, 1.0);
+	return t * t * (3.0-2.0*t);
+}
+
 void main(void){
 	// distance from centre of line
 	float distance = 1.0 - texture(fontAtlas, pass_textureCoords).a;
 	// transparency
-	float alpha = 1.0 - smoothstep(width, width+edge, distance);
+	float alpha = 1.0 - smoothlyStep(width, width+edge, distance);
 	
 	// distance from centre of line
 	float distance2 = 1.0 - texture(fontAtlas, pass_textureCoords+offset).a;
 	// transparency
-	float outlineAlpha = 1.0 - smoothstep(borderWidth, borderWidth+borderEdge, distance2);
+	float outlineAlpha = 1.0 - smoothlyStep(borderWidth, borderWidth+borderEdge, distance2);
 	
 	float overallAlpha = alpha + (1.0-alpha) * outlineAlpha;
 	vec3 overallColor = mix(outlineColor, color, alpha/overallAlpha);
