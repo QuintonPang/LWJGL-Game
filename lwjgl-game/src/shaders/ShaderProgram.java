@@ -1,8 +1,9 @@
 package shaders;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
@@ -20,7 +21,7 @@ public abstract class ShaderProgram {
 	
 	// 4*4 matrix
 	private static FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
-	
+
 	public ShaderProgram(String vertexFile,String fragmentFile) {
 		this.vertexShaderID = loadShader(vertexFile,GL20.GL_VERTEX_SHADER);
 		this.fragmentShaderID = loadShader(fragmentFile,GL20.GL_FRAGMENT_SHADER);
@@ -103,7 +104,10 @@ public abstract class ShaderProgram {
 	private static int loadShader(String file, int type) {
 		StringBuilder shaderSource = new StringBuilder();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(file));
+			InputStream in = ShaderProgram.class.getResourceAsStream(file);
+			// BufferedReader reader = new BufferedReader(new FileReader(file));
+			// search in bin folder
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 			String line;
 			while((line=reader.readLine())!=null) {
 				shaderSource.append(line).append("\n");

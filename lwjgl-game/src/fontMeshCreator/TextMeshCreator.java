@@ -11,7 +11,7 @@ public class TextMeshCreator {
 
 	private MetaFile metaData;
 
-	protected TextMeshCreator(File metaFile) {
+	protected TextMeshCreator(/*File metaFile*/ String metaFile) {
 		metaData = new MetaFile(metaFile);
 	}
 

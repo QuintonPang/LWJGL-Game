@@ -28,6 +28,8 @@ import normalMappingObjConverter.NormalMappedObjLoader;
 import particles.ParticleMaster;
 import particles.ParticleSystem;
 import particles.ParticleTexture;
+import postProcessing.Fbo;
+import postProcessing.PostProcessing;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.MasterRenderer;
@@ -96,7 +98,7 @@ public class MainGameLoop {
 		
 		// ********** FONT **********
 		TextMaster.init(loader);
-		FontType font = new FontType(loader.loadTexture("fonts/candara"), new File("res/fonts/candara.fnt"));
+		FontType font = new FontType(loader.loadTexture("fonts/candara"), "candara");
 		GUIText text = new GUIText("This is a text!",5 , font, new Vector2f(0,0), 1f, true);
 		text.setColour(0, 0, 0);
 		// ********************
@@ -167,15 +169,6 @@ public class MainGameLoop {
 		boulderModel.getTexture().setReflectivity(0.5f);
 		*/
 		
-		//**********Water Renderer Set-up************************
-		/*
-		WaterFrameBuffers buffers = new WaterFrameBuffers();
-		WaterShader waterShader = new WaterShader();
-		WaterRenderer waterRenderer = new WaterRenderer(loader, waterShader, renderer.getProjectionMatrix(), buffers);
-		List<WaterTile> waters = new ArrayList<WaterTile>();
-		WaterTile water = new WaterTile(75, -75, 0);
-		waters.add(water);
-		*/
 		Random random = new Random();
 		
 		//************ENTITIES*******************
@@ -311,6 +304,11 @@ public class MainGameLoop {
 		
 		// ********************
 		
+		// ********** POST-PROCESSING EFFECTS ***********
+		Fbo fbo = new Fbo(Display.getWidth(), Display.getHeight(), Fbo.DEPTH_RENDER_BUFFER);
+		PostProcessing.init(loader);
+		// *******************
+		
 		while(!Display.isCloseRequested()) {
 			
 			// game logic
@@ -361,26 +359,8 @@ public class MainGameLoop {
 			renderer.processTerrain(terrain4);
 			*/
 			renderer.processEntity(player);
+
 			
-			//render reflection texture
-			
-			//buffers.bindReflectionFrameBuffer();
-			//float distance = 2 * (camera.getPosition().y - water.getHeight());
-			//camera.getPosition().y -= distance;
-			//camera.invertPitch();
-			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 /*-water.getHeight()+1*/));
-			//camera.getPosition().y += distance;
-			//camera.invertPitch();
-			
-			//render refraction texture
-			//buffers.bindRefractionFrameBuffer();
-			//renderer.renderScene(entities, normalMapEntities, terrains, lights, camera, new Vector4f(0, -1, 0, water.getHeight()));
-			
-			//render to screen
-			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
-			//buffers.unbindCurrentFrameBuffer();	
-			//renderer.renderScene(entities, normalMapEngtities, terrains, lights, camera, new Vector4f(0, -1, 0, 100000));	
-			//waterRenderer.render(waters, camera, sun);
 			
 			
 			for(Entity monkey:monkeys) {
@@ -401,14 +381,24 @@ public class MainGameLoop {
 				//new Particle(new Vector3f(player.getPosition()),new Vector3f(0,30,0),1,4,0,1);
 				particleSystem.generateParticles(player.getPosition());
 			}
+			
+			// where user-defined fbo comes in
+			fbo.bindFrameBuffer();
+			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 /*-water.getHeight()+1*/));
 			waterRenderer.render(waters, camera, light);
+			ParticleMaster.renderParticles(camera);
+			fbo.unbindFrameBuffer();
+			PostProcessing.doPostProcessing(fbo.getColourTexture());
+			// any renderere after this does not get affected by the fbo
+			
 			guiRenderer.render(guis);
 			TextMaster.render();
-			ParticleMaster.renderParticles(camera);
 			DisplayManager.updateDisplay();
 		}
 		
 		//shader.cleanUp();
+		fbo.cleanUp();
+		PostProcessing.cleanUp();
 		TextMaster.cleanUp();
 		guiRenderer.cleanUp();
 		ParticleMaster.cleanUp();
