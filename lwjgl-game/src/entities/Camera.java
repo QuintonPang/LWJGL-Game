@@ -35,6 +35,7 @@ public class Camera {
 		
 		calculateCameraPosition(horizontalDistance, verticalDistance);
 		this.yaw = 180 - (player.getRotY() + angleAroundPlayer);
+		this.yaw%=360;
 	}
 	
 	private void calculateCameraPosition(float horizontalDistance, float verticalDistance) {
@@ -42,7 +43,7 @@ public class Camera {
 		float offsetX = (float) (horizontalDistance * Math.sin(Math.toRadians(theta)));
 		float offsetZ = (float) (horizontalDistance * Math.cos(Math.toRadians(theta)));
 		position.x = player.getPosition().x - offsetX;
-		position.y = player.getPosition().y +  verticalDistance;
+		position.y = player.getPosition().y +  verticalDistance + 4;
 		position.z = player.getPosition().z - offsetZ;
 	}
 
@@ -71,7 +72,12 @@ public class Camera {
 		if(Mouse.isButtonDown(1)) {
 			// right button
 			float pitchChange = Mouse.getDY() * 0.1f; // how much position of mouse is moved up and down
-			if(pitch-pitchChange>=0.1f && pitch-pitchChange<=31) pitch -= pitchChange; // prevent from camera below terrain
+			pitch -= pitchChange;
+			if(pitch < 0){
+				pitch = 0;
+			}else if(pitch > 90){
+				pitch = 90;
+			} 
 		}
 	}
 	

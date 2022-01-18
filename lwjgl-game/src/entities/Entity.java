@@ -81,7 +81,18 @@ public class Entity {
 	public float getScale() {
 		return scale;
 	}
-	
+
+	public void setRotX(float rotX) {
+		this.rotX = rotX;
+	}
+
+	public void setRotY(float rotY) {
+		this.rotY = rotY;
+	}
+
+	public void setRotZ(float rotZ) {
+		this.rotZ = rotZ;
+	}
 	
 
 }

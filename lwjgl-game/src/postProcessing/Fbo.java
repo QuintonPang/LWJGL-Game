@@ -9,6 +9,8 @@ import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL30;
 
+import renderEngine.DisplayManager;
+
 public class Fbo {
 
 	public static final int NONE = 0;
@@ -19,6 +21,9 @@ public class Fbo {
 	private final int height;
 
 	private int frameBuffer;
+	
+	// should be multi-sampled or not
+	private boolean multisample = false;
 
 	private int colourTexture;
 	private int depthTexture;
@@ -43,6 +48,16 @@ public class Fbo {
 		this.height = height;
 		initialiseFrameBuffer(depthBufferType);
 	}
+	
+	// fbo with multisampler
+	public Fbo(int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.multisample = true;
+		initialiseFrameBuffer(DEPTH_RENDER_BUFFER);
+	}
+	
+	
 
 	/**
 	 * Deletes the frame buffer and its attachments when the game closes.
@@ -96,6 +111,23 @@ public class Fbo {
 	public int getDepthTexture() {
 		return depthTexture;
 	}
+	
+	// resolve fbo to fbo
+	public void resolveToFbo(Fbo outputFbo) {
+		GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, outputFbo.frameBuffer);
+		GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, this.frameBuffer);
+		GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, outputFbo.width, outputFbo.height, GL11.GL_COLOR_BUFFER_BIT|GL11.GL_DEPTH_BUFFER_BIT, GL11.GL_NEAREST); // color and depth buffer
+		this.unbindFrameBuffer();
+	}
+	
+	// resolve fbo straight to screen
+	public void resolveToScreen() {
+		GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, 0);
+		GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, this.frameBuffer);
+		GL11.glDrawBuffer(GL11.GL_BACK);
+		GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, DisplayManager.WIDTH, DisplayManager.HEIGHT, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
+		this.unbindFrameBuffer();
+	}
 
 	/**
 	 * Creates the FBO along with a colour buffer texture attachment, and
@@ -107,6 +139,9 @@ public class Fbo {
 	 */
 	private void initialiseFrameBuffer(int type) {
 		createFrameBuffer();
+		if(multisample) {
+			createMultiSampleColorAttachment();
+		}
 		createTextureAttachment();
 		if (type == DEPTH_RENDER_BUFFER) {
 			createDepthBufferAttachment();
@@ -163,9 +198,24 @@ public class Fbo {
 	 * Adds a depth buffer to the FBO in the form of a render buffer. This can't
 	 * be used for sampling in the shaders.
 	 */
+	
+	private void createMultiSampleColorAttachment() {
+		colourBuffer = GL30.glGenRenderbuffers();
+		GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, colourBuffer);
+		GL30.glRenderbufferStorageMultisample(GL30.GL_FRAMEBUFFER, 4, GL11.GL_RGBA8, width, height); // 8 indicates bit
+		GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL30.GL_RENDERBUFFER,
+				colourBuffer);
+	}
+	
 	private void createDepthBufferAttachment() {
 		depthBuffer = GL30.glGenRenderbuffers();
 		GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, depthBuffer);
+		if(!multisample) {
+			GL30.glRenderbufferStorage(GL30.GL_FRAMEBUFFER, GL14.GL_DEPTH_COMPONENT24, width, height);
+		}else {
+			GL30.glRenderbufferStorageMultisample(GL30.GL_FRAMEBUFFER, 4, GL14.GL_DEPTH_COMPONENT24, width, height);
+
+		}
 		GL30.glRenderbufferStorage(GL30.GL_RENDERBUFFER, GL14.GL_DEPTH_COMPONENT24, width, height);
 		GL30.glFramebufferRenderbuffer(GL30.GL_FRAMEBUFFER, GL30.GL_DEPTH_ATTACHMENT, GL30.GL_RENDERBUFFER,
 				depthBuffer);

@@ -10,6 +10,9 @@ in vec4 shadowCoords;
 
 out vec4 out_Color;
 
+uniform sampler2D modelTexture;
+uniform sampler2D specularMap;
+uniform float useSpecularMap;
 uniform sampler2D textureSampler;
 uniform vec3 lightColor[4];
 uniform float shineDamper;
@@ -88,6 +91,12 @@ void main(void){
 	vec4 textureColor = texture(textureSampler,pass_textureCoords);
 	if(textureColor.a<0.5){
 		discard; // remove transparent part
+	}
+	
+	if(useSpecularMap > 0.5){
+		vec4 mapInfo = texture(specularMap, pass_textureCoords);
+		totalSpecular *= mapInfo.r; // the more red, the higher the specular lighting
+		if(mapInfo.g>0.5) totalDiffuse = vec3(1.0); // glowing part
 	}
 	
 	//out_Color = vec4(color,1.0);

@@ -49,6 +49,8 @@ public class Maths {
 		// not using roll
 		Matrix4f viewMatrix = new Matrix4f();
 		viewMatrix.setIdentity();
+		// points at player when changing pitch
+		Matrix4f.rotate((float) Math.toRadians(camera.getPitch()), new Vector3f(1, 0, 0), viewMatrix,viewMatrix);
 		Matrix4f.rotate((float)Math.toRadians(camera.getYaw()), new Vector3f(0,1,0), viewMatrix, viewMatrix);
 		Vector3f cameraPos = camera.getPosition();
 		// moving world in opposite direction

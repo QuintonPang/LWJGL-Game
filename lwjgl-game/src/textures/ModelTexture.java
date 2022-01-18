@@ -3,6 +3,7 @@ package textures;
 public class ModelTexture {
 	private int textureID;
 	private int normalMap;
+	private int specularMap;
 	
 	public int getNormalMap() {
 		return normalMap;
@@ -17,6 +18,7 @@ public class ModelTexture {
 	
 	private boolean hasTransparency = false;
 	private boolean useFakeLighting = false;
+	private boolean hasSpecularMap = false;
 	
 	private int numberOfRows = 1;
 	
@@ -28,9 +30,23 @@ public class ModelTexture {
 		this.numberOfRows = numberOfRows;
 	}
 
+	public void setExtraInfoMap(int specularMap) {
+		this.specularMap = specularMap;
+		this.hasSpecularMap = true;
+	}
+	
+	public boolean isHasSpecularMap() {
+		return hasSpecularMap;
+	}
+	
+	public int getSpecularMap() {
+		return this.specularMap;
+	}
+
 	public boolean isUseFakeLighting() {
 		return useFakeLighting;
 	}
+
 
 	public void setUseFakeLighting(boolean useFakeLighting) {
 		this.useFakeLighting = useFakeLighting;

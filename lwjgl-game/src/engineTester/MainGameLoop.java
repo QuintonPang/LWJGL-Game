@@ -281,6 +281,14 @@ public class MainGameLoop {
 			entities.add(lowPolyTree);		
 		}
 		entities.add(player);
+		
+		TexturedModel cherryModel = new TexturedModel(OBJLoader.loadObjModel("specular/cherry", loader), new ModelTexture(loader.loadTexture("specular/cherry")));
+		cherryModel.getTexture().setHasTransparency(true);
+		cherryModel.getTexture().setShineDamper(10);
+		cherryModel.getTexture().setReflectivity(0.5f);
+		cherryModel.getTexture().setExtraInfoMap(loader.loadTexture("specular/cherryS"));
+		Entity cherry = new Entity(cherryModel, new Vector3f(player.getPosition().x,terrains[0][0].getHeightOfTerrain(player.getPosition().x, player.getPosition().z), player.getPosition().z), 0, 0, 0, 10);
+		entities.add(cherry);
 		// ********************
 		
 		// ********** WATER **********
@@ -306,6 +314,8 @@ public class MainGameLoop {
 		
 		// ********** POST-PROCESSING EFFECTS ***********
 		Fbo fbo = new Fbo(Display.getWidth(), Display.getHeight(), Fbo.DEPTH_RENDER_BUFFER);
+		Fbo multisampleFbo = new Fbo(Display.getWidth(), Display.getHeight());
+		Fbo outputFbo = new Fbo(Display.getWidth(), Display.getHeight(),Fbo.DEPTH_TEXTURE);
 		PostProcessing.init(loader);
 		// *******************
 		
@@ -383,12 +393,14 @@ public class MainGameLoop {
 			}
 			
 			// where user-defined fbo comes in
-			fbo.bindFrameBuffer();
-			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 /*-water.getHeight()+1*/));
+			multisampleFbo.bindFrameBuffer();
+			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 -water.getHeight()+1));
 			waterRenderer.render(waters, camera, light);
 			ParticleMaster.renderParticles(camera);
-			fbo.unbindFrameBuffer();
-			PostProcessing.doPostProcessing(fbo.getColourTexture());
+			multisampleFbo.unbindFrameBuffer();
+			multisampleFbo.resolveToScreen(); // straight to screen
+			// multisampleFbo.resolveToFbo(outputFbo);
+			// ostProcessing.doPostProcessing(outputFbo.getColourTexture());
 			// any renderere after this does not get affected by the fbo
 			
 			guiRenderer.render(guis);
@@ -398,6 +410,8 @@ public class MainGameLoop {
 		
 		//shader.cleanUp();
 		fbo.cleanUp();
+		multisampleFbo.cleanUp();
+		outputFbo.cleanUp();
 		PostProcessing.cleanUp();
 		TextMaster.cleanUp();
 		guiRenderer.cleanUp();
