@@ -316,6 +316,7 @@ public class MainGameLoop {
 		Fbo fbo = new Fbo(Display.getWidth(), Display.getHeight(), Fbo.DEPTH_RENDER_BUFFER);
 		Fbo multisampleFbo = new Fbo(Display.getWidth(), Display.getHeight());
 		Fbo outputFbo = new Fbo(Display.getWidth(), Display.getHeight(),Fbo.DEPTH_TEXTURE);
+		Fbo outputFbo2 = new Fbo(Display.getWidth(), Display.getHeight(),Fbo.DEPTH_TEXTURE);
 		PostProcessing.init(loader);
 		// *******************
 		
@@ -393,14 +394,16 @@ public class MainGameLoop {
 			}
 			
 			// where user-defined fbo comes in
-			fbo.bindFrameBuffer();
+			multisampleFbo.bindFrameBuffer();
 			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0, 1, 0, 1 -water.getHeight()+1));
 			waterRenderer.render(waters, camera, light);
 			ParticleMaster.renderParticles(camera);
-			fbo.unbindFrameBuffer();
+			multisampleFbo.unbindFrameBuffer();
 			// multisampleFbo.resolveToScreen(); // straight to screen
-			// multisampleFbo.resolveToFbo(outputFbo);
-			PostProcessing.doPostProcessing(fbo.getColourTexture());
+//			multisampleFbo.resolveToFbo(outputFbo);			
+			multisampleFbo.resolveToFbo(GL30.GL_COLOR_ATTACHMENT0,outputFbo);
+			multisampleFbo.resolveToFbo(GL30.GL_COLOR_ATTACHMENT1,outputFbo2);
+			PostProcessing.doPostProcessing(outputFbo.getColourTexture(), outputFbo2.getColourTexture());
 			// any renderer after this does not get affected by the fbo
 			
 			guiRenderer.render(guis);
@@ -412,6 +415,7 @@ public class MainGameLoop {
 		fbo.cleanUp();
 		multisampleFbo.cleanUp();
 		outputFbo.cleanUp();
+		outputFbo2.cleanUp();
 		PostProcessing.cleanUp();
 		TextMaster.cleanUp();
 		guiRenderer.cleanUp();

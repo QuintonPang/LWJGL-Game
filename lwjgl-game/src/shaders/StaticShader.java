@@ -44,6 +44,9 @@ public class StaticShader extends ShaderProgram {
 
 	@Override
 	protected void bindAttributes() {
+//		for multiple render targets in lower version
+//		super.bindFragOutput(0, "out_Color");
+//		super.bindFragOutput(0, "out_BrightColor");
 		super.bindAttribute(0, "position");
 		super.bindAttribute(1, "textureCoords");
 		super.bindAttribute(2, "normal");

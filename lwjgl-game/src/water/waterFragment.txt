@@ -5,7 +5,11 @@ in vec2 textureCoords;
 in vec3 toCameraVector;
 in vec3 fromLightVector;
 
-out vec4 out_Color;
+// multiple render targets
+layout(location=0) out vec4 out_Color; // rendering to 0
+layout(location=1) out vec4 out_BrightColor; // rendering to 1
+
+// out vec4 out_Color;
 
 uniform sampler2D reflectionTexture;
 uniform sampler2D refractionTexture;
@@ -110,4 +114,7 @@ void main(void) {
 	// alpha value of 0 is transparent and transparency decreases and alpha value increases
 	// at water depth of 5, alpha value is 1
 	out_Color.a = clamp(waterDepth/5.0, 0.0, 1.0);
+	
+	out_BrightColor = vec4(0.0); // black
+	
 }
