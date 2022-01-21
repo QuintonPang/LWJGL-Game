@@ -14,6 +14,9 @@ import org.lwjgl.util.vector.Vector4f;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
+import entityRenderer.EntityRenderer2;
+import environmentMapRenderer.CubeMap;
+import environmentMapRenderer.SkyboxRenderer2;
 import models.TexturedModel;
 import normalMappingRenderer.NormalMappingRenderer;
 import shaders.StaticShader;
@@ -24,10 +27,17 @@ import terrains.Terrain;
 
 public class MasterRenderer {
 	
+	// cube maps
+	private static final String[] ENVIRO_MAP_SNOW = {"cposx", "cnegx", "cposy", "cnegy", "cposz", "cnegz"};
+	private static final String[] ENVIRO_MAP_LAKE = {"posx", "negx", "posy", "negy", "posz", "negz"};
+	private static final String[] ENVIRO_MAP_INSIDE = {"lposx", "lnegx", "lposy", "lnegy", "lposz", "lnegz"};
 
 	public static final float FOV = 70; //field of view
 	public static final float NEAR_PLANE = 0.1f;
 	public static final float FAR_PLANE = 1000;
+	
+	private SkyboxRenderer2 environmentRenderer;
+	private EntityRenderer2 entityRenderer;
 	
 	public static final float RED = 0.5444f, GREEN = 0.62f, BLUE = 0.69f;  // matches skybox color
 	
@@ -60,6 +70,17 @@ public class MasterRenderer {
 		skyboxRenderer = new SkyboxRenderer(loader,projectionMatrix);
 		normalMapRenderer = new NormalMappingRenderer(projectionMatrix);
 		this.shadowMapRenderer = new ShadowMapMasterRenderer(camera);
+		
+		CubeMap enviroMap = new CubeMap(new String[0],ENVIRO_MAP_INSIDE, loader);
+		this.environmentRenderer = new SkyboxRenderer2(enviroMap, projectionMatrix);
+		this.entityRenderer = new EntityRenderer2(projectionMatrix, enviroMap);
+	}
+	
+	// for rendering cube map
+	public void renderScene(List<Entity> entities, Camera camera){
+		prepare();
+		entityRenderer.render(entities, camera);
+		environmentRenderer.render(camera);
 	}
 	
 	public void renderScene(List<Entity> entities, List<Entity> normalEntities, List<Terrain> terrains, List<Light> lights,
@@ -188,6 +209,9 @@ public class MasterRenderer {
 		terrainShader.cleanUp();
 		normalMapRenderer.cleanUp();
 		shadowMapRenderer.cleanUp();
+		
+		environmentRenderer.cleanUp();
+		entityRenderer.cleanUp();
 	}
 	
 

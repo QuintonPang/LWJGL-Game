@@ -25,6 +25,7 @@ import guis.GuiTexture;
 import models.RawModel;
 import models.TexturedModel;
 import normalMappingObjConverter.NormalMappedObjLoader;
+import objConverter.OBJFileLoader;
 import particles.ParticleMaster;
 import particles.ParticleSystem;
 import particles.ParticleTexture;
@@ -57,6 +58,7 @@ public class MainGameLoop {
 		Player player = new Player(new TexturedModel(OBJLoader.loadObjModel("person", loader),playerTexture),new Vector3f(-500,100,-500),0,0,0,1);
 	
 		Camera camera = new Camera(player);
+//		Camera camera = new Camera();
 		MasterRenderer renderer = new MasterRenderer(loader, camera);
 		
 		// StaticShader shader = new StaticShader();
@@ -320,7 +322,19 @@ public class MainGameLoop {
 		PostProcessing.init(loader);
 		// *******************
 		
+		// ********** CUBE MAP REFLECTION ENTITIES **********
+		List<Entity> cubeMapEntities = new ArrayList<Entity>();
+		cubeMapEntities.add(new Entity(loadModel("cubeMap/meta", loader), new Vector3f(4, 1, 0), 0, 2.5f));
+		cubeMapEntities.add(new Entity(loadModel("cubeMap/tea", loader), new Vector3f(0.3f, 1, 0), 0, 2.5f));
+		cubeMapEntities.add(new Entity(loadModel("cubeMap/dragon", loader), new Vector3f(-4, 1, 0), 0, 2.5f));
+		
+		// ********************
+		
 		while(!Display.isCloseRequested()) {
+			
+			// for cube map reflection
+//			camera.move();
+//			renderer.renderScene(cubeMapEntities,camera);
 			
 			// game logic
 			// render
@@ -344,7 +358,7 @@ public class MainGameLoop {
 			renderer.renderScene(entities, normalMapEntities, terrainList, lights, camera, new Vector4f(0,-1,0,water.getHeight())); // render everything under the water
 			GL11.glDisable(GL30.GL_CLIP_DISTANCE0);
 			fbos.unbindCurrentFrameBuffer(); // switch back to default buffer
-			
+		
 			int gridX = (int) (Math.floor(player.getPosition().x/Terrain.getSize())) + 1;
 			int gridZ = (int) (Math.floor(player.getPosition().z/Terrain.getSize())) + 1;
 		
@@ -425,6 +439,12 @@ public class MainGameLoop {
 		loader.cleanUp();
 		// after exiting, close display
 		DisplayManager.closeDisplay();
+	}
+	
+	private static TexturedModel loadModel(String fileName, Loader loader){
+		RawModel model = OBJFileLoader.loadOBJ(fileName, loader);
+		ModelTexture texture = new ModelTexture(loader.loadTexture(fileName));
+		return new TexturedModel(model, texture);
 	}
 
 }

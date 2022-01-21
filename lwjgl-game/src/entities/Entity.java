@@ -23,6 +23,14 @@ public class Entity {
 		this.scale = scale;
 	}
 	
+	public Entity(TexturedModel model, Vector3f position, float rotY, float scale) {
+		this.model = model;
+		this.position = position;
+		this.rotY = rotY;
+		this.scale = scale;
+	}
+
+	
 	public Entity(TexturedModel model, int textureIndex, Vector3f position, float rotX, float rotY, float rotZ, float scale) {
 		super();
 		this.model = model;
