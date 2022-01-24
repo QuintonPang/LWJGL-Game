@@ -6,9 +6,9 @@ import org.lwjgl.util.vector.Vector3f;
 
 public class Camera {
 	// initial position
-	 private Vector3f position = new Vector3f(100,35,50);
+//	 private Vector3f position = new Vector3f(100,35,50);
 	// for looking at cube map reflections
-//	private Vector3f position = new Vector3f(0,0,0);
+	private Vector3f position = new Vector3f(0,0,0);
 	private float pitch=20; // how high or low it is aimed
 	private float yaw; // how left or right the camera is aiming
 	private float roll; // how much it is rotated
@@ -39,22 +39,22 @@ public class Camera {
 		float verticalDistance = calculateVerticalDistance();
 		
 		calculateCameraPosition(horizontalDistance, verticalDistance);
-		this.yaw = 180 - (player.getRotY() + angleAroundPlayer);
-//		this.yaw = 360 - angleAroundPlayer;
+//		this.yaw = 180 - (player.getRotY() + angleAroundPlayer);
+		this.yaw = 360 - angleAroundPlayer;
 		this.yaw%=360;
 	}
 	
 	private void calculateCameraPosition(float horizontalDistance, float verticalDistance) {
 //		float theta = angleAroundPlayer;
-		float theta = player.getRotY() + angleAroundPlayer;
+		float theta = /*player.getRotY()*/ + angleAroundPlayer;
 		float offsetX = (float) (horizontalDistance * Math.sin(Math.toRadians(theta)));
 		float offsetZ = (float) (horizontalDistance * Math.cos(Math.toRadians(theta)));
-		position.x = player.getPosition().x - offsetX;
-		position.y = player.getPosition().y +  verticalDistance + 4;
-		position.z = player.getPosition().z - offsetZ;
-//		position.x =   offsetX;
-//		position.y =   verticalDistance + 4;
-//		position.z =   offsetZ;
+//		position.x = player.getPosition().x - offsetX;
+//		position.y = player.getPosition().y +  verticalDistance + 4;
+//		position.z = player.getPosition().z - offsetZ;
+		position.x =   offsetX;
+		position.y =   verticalDistance + 4;
+		position.z =   offsetZ;
 	}
 
 	public Vector3f getPosition() {

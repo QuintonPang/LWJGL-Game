@@ -25,6 +25,7 @@ import org.newdawn.slick.opengl.TextureLoader;
 
 import de.matthiasmann.twl.utils.PNGDecoder;
 import de.matthiasmann.twl.utils.PNGDecoder.Format;
+import models.ParticlesVao;
 import models.RawModel;
 import textures.TextureData;
 
@@ -55,6 +56,8 @@ public class Loader {
 		vbos.add(vbo);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
 		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, floatCount*4, GL15.GL_STREAM_DRAW);
+		// for geometry shader
+		GL20.glVertexAttribPointer(0, 3, GL11.GL_FLOAT, false, 0, 0);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 		return vbo;
 	}
@@ -73,7 +76,7 @@ public class Loader {
 		buffer.put(data);
 		buffer.flip();
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer.capacity(), GL15.GL_STREAM_DRAW);
+		GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer.capacity()*4, GL15.GL_STREAM_DRAW);
 		GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
 		GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
 	}
@@ -308,6 +311,13 @@ public class Loader {
 		GL11.glTexParameteri(GL13.GL_TEXTURE_CUBE_MAP, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
 		textures.add(texID);
 		return texID;
+	}
+	
+	public ParticlesVao createEmptyVAO(int maxParticles) {
+		int vaoID = createVAO();
+		int vbo = createEmptyVbo(maxParticles);
+		unbindVAO();
+		return new ParticlesVao(vaoID, vbo, this);
 	}
 
 
